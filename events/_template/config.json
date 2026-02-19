@@ -10,8 +10,7 @@
   "links": {
     "tickets": "https://lu.ma/XXXXXX",
     "merch": "",
-    "line": "",
-    "instagram": ""
+    "line": ""
   },
   "tiers": [
     { "id": "men", "name": { "en": "Standard (Men)", "jp": "スタンダード（男性）" }, "priceYen": 9500, "includes": { "en": "Entrance", "jp": "入場" } },
