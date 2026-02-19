@@ -17,11 +17,7 @@ function t(obj){
   if (typeof obj === "string") return obj;
   return obj[state.lang] ?? obj.en ?? "";
 }
-
-function yen(n){
-  return new Intl.NumberFormat("ja-JP").format(Number(n || 0));
-}
-
+function yen(n){ return new Intl.NumberFormat("ja-JP").format(Number(n || 0)); }
 function bgPath(file){ return file ? `./events/${state.event}/assets/${file}` : ""; }
 
 function toast(msg){
@@ -30,6 +26,38 @@ function toast(msg){
   el.textContent = msg;
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 1200);
+}
+
+function getRef(){
+  const urlRef = qs.get("ref");
+  const saved = localStorage.getItem("uvx_ref");
+  const ref = urlRef || saved || "";
+  if (ref) localStorage.setItem("uvx_ref", ref);
+  return ref;
+}
+
+function withRef(url){
+  if (!url) return "";
+  const ref = state.ref || getRef();
+  if (!ref) return url;
+  try{
+    const u = new URL(url);
+    if (!u.searchParams.get("ref")) u.searchParams.set("ref", ref);
+    return u.toString();
+  }catch{
+    return url;
+  }
+}
+
+function track(name, data = {}){
+  const payload = { event: state.event, lang: state.lang, ref: state.ref || getRef(), tier: state.tier || "", ...data };
+  if (typeof window.gtag === "function") window.gtag("event", name, payload);
+  try{
+    const key = "uvx_tracking_log";
+    const arr = JSON.parse(localStorage.getItem(key) || "[]");
+    arr.push({ ts: Date.now(), name, ...payload });
+    localStorage.setItem(key, JSON.stringify(arr.slice(-300)));
+  }catch{}
 }
 
 function buildShareLink(){
@@ -46,7 +74,7 @@ function buildShareLink(){
 
 async function loadConfig(){
   const path = `./events/${state.event}/config.json`;
-  const res = await fetch(path, { cache: "no-store" });
+  const res = await fetch(path, { cache:"no-store" });
   if (!res.ok) throw new Error(`Config not found: ${path}`);
   return await res.json();
 }
@@ -58,22 +86,91 @@ function setLangUI(){
   $("langJp")?.setAttribute("aria-selected", state.lang === "jp");
 }
 
+function openInvite(){
+  $("inviteOverlay").classList.remove("hidden");
+  $("inviteOverlay").setAttribute("aria-hidden","false");
+}
+function closeInvite(){
+  $("inviteOverlay").classList.add("hidden");
+  $("inviteOverlay").setAttribute("aria-hidden","true");
+}
+
+function wireInvite(config){
+  // populate tiers
+  const sel = $("tierSelect");
+  sel.innerHTML = "";
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = state.lang === "jp" ? "チケット選択" : "Select ticket";
+  sel.appendChild(opt0);
+
+  (config.tiers || []).forEach(tier => {
+    const opt = document.createElement("option");
+    opt.value = tier.id;
+    opt.textContent = `${t(tier.name)} — ¥${yen(tier.priceYen)}`;
+    sel.appendChild(opt);
+  });
+  if (state.tier) sel.value = state.tier;
+
+  $("toName").value = state.to;
+  $("fromName").value = state.from;
+
+  $("toName").oninput = (e) => state.to = e.target.value;
+  $("fromName").oninput = (e) => state.from = e.target.value;
+  sel.onchange = (e) => state.tier = e.target.value;
+
+  $("copyLink").onclick = async () => {
+    track("copy_link");
+    const link = buildShareLink();
+    try{ await navigator.clipboard.writeText(link); toast(state.lang === "jp" ? "コピーしました" : "Copied"); }
+    catch{ window.prompt("Copy this link:", link); }
+  };
+
+  $("enterPage").onclick = () => closeInvite();
+  $("closeInvite").onclick = () => closeInvite();
+  $("openInvite").onclick = () => openInvite();
+
+  // music
+  const audio = $("bgm");
+  const musicFile = config.music?.file;
+  if (musicFile) {
+    audio.src = bgPath(musicFile);
+    $("musicToggle").style.display = "block";
+    $("playBtn").style.display = state.music ? "block" : "none";
+  } else {
+    $("musicToggle").style.display = "none";
+    $("playBtn").style.display = "none";
+  }
+
+  $("musicToggle").onclick = () => {
+    state.music = !state.music;
+    track("toggle_music", { on: state.music ? 1 : 0 });
+    if (!state.music) { audio.pause(); $("playBtn").textContent = "Play Me"; }
+    $("playBtn").style.display = state.music ? "block" : "none";
+  };
+
+  $("playBtn").onclick = async () => {
+    try{
+      if (audio.paused) { await audio.play(); $("playBtn").textContent = state.lang === "jp" ? "停止" : "Pause"; track("music_play"); }
+      else { audio.pause(); $("playBtn").textContent = "Play Me"; track("music_pause"); }
+    }catch{ toast(state.lang === "jp" ? "再生できません" : "Unable to play"); }
+  };
+}
+
 function render(config){
   document.title = `${t(config.title) || "Event"} | ${config.brand || "Event"}`;
   $("brand").textContent = config.brand || "EVENT";
 
-  // Top CTA scroll
-  $("ctaTop").onclick = () => document.getElementById("tickets")?.scrollIntoView({ behavior:"smooth" });
-
-  // Hero background: use your neon paint image by default if event doesn't provide one
   const heroBg = bgPath(config.sections?.heroBg || config.heroImage || "hero.jpg");
+  const ticketUrl = withRef(config.links?.tickets || "");
+  const merchUrl  = withRef(config.links?.merch || "");
+  const lineUrl   = withRef(config.links?.line || "");
+  const igUrl     = withRef(config.links?.instagram || "");
 
   const toText = state.to?.trim() || (state.lang === "jp" ? "ご招待客" : "Guest");
   const fromText = state.from?.trim() || (state.lang === "jp" ? "主催" : "Host");
 
   const tiers = config.tiers || [];
-  const selectedTier = tiers.find(x => x.id === state.tier) || null;
-
   const tierCards = tiers.map(tier => `
     <div class="card">
       <div class="badge">${t(tier.name)}</div>
@@ -85,278 +182,138 @@ function render(config){
     </div>
   `).join("");
 
-  const lineup = (config.lineup || []).map(x => `
-    <div class="item">
-      <strong>${x.name}</strong>
-      <span>${t(x.role)}</span>
-    </div>
-  `).join("");
-
-  const schedule = (config.schedule || []).map(x => `
-    <div class="item">
-      <strong>${x.time}</strong>
-      <span>${t(x.text)}</span>
-    </div>
-  `).join("");
-
-  const gallery = (config.gallery?.images || []).map(img => {
-    const src = bgPath(img);
-    return `<img src="${src}" alt="gallery" loading="lazy">`;
-  }).join("");
-
-  const payMethods = (config.payments?.methods || []).map(m => `
+  const vipSteps = (config.vipFlow?.steps || []).map(s => `
     <div class="card">
-      <div class="badge">${t(m.name || m.id)}</div>
+      <div class="badge">${t(s.title)}</div>
+      <div class="small" style="margin-top:10px;">${t(s.text)}</div>
+    </div>
+  `).join("");
+
+  const photos = (config.media?.photos?.images || []).map(img => `
+    <img src="${bgPath(img)}" alt="photo" loading="lazy">
+  `).join("");
+
+  const videos = (config.media?.videos?.items || []).map(v => `
+    <div class="card">
+      <div class="badge">${t(v.title) || "Video"}</div>
       <div style="margin-top:10px;">
-        <img src="${bgPath(m.qr)}" alt="QR" style="width:100%;max-width:320px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:#fff;">
+        <a class="btn ghost" data-video="1" href="${withRef(v.url)}" target="_blank" rel="noreferrer">
+          ${state.lang === "jp" ? "見る" : "Watch"}
+        </a>
       </div>
-      <div class="small" style="margin-top:10px;">${t(m.note)}</div>
-    </div>
-  `).join("");
-
-  const faq = (config.faq || []).map(f => `
-    <div class="card">
-      <h3 style="margin:0 0 6px;">${t(f.q)}</h3>
-      <div class="small">${t(f.a)}</div>
     </div>
   `).join("");
 
   $("app").innerHTML = `
-    <!-- HERO -->
     <section class="section hero">
       <div class="bg" style="background-image:url('${heroBg}')"></div>
       <div class="section-inner">
         <div class="hero-card">
           <div class="kicker">${t(config.subtitle)}</div>
           <h1>${t(config.title)}</h1>
-          <div class="subhead">${t(config.description)}</div>
+          <div class="subhead">${t(config.description || "")}</div>
 
           <div class="meta">
             <div class="pill">📅 <span>${t(config.dateText)}</span></div>
             <div class="pill">📍 <span>${t(config.venueText)}</span></div>
-            ${selectedTier ? `<div class="pill">🎟️ <span>${t(selectedTier.name)} • ¥${yen(selectedTier.priceYen)}</span></div>` : ``}
+            ${state.ref ? `<div class="pill">REF: <span>${state.ref}</span></div>` : ``}
           </div>
 
           <div class="meta" style="margin-top:12px;">
             <div class="pill">TO: <span>${toText}</span></div>
             <div class="pill">FROM: <span>${fromText}</span></div>
-            ${state.ref ? `<div class="pill">REF: <span>${state.ref}</span></div>` : ``}
           </div>
 
-          <div class="cta-row">
-            <button class="btn primary" id="ctaTickets">${state.lang === "jp" ? "チケットを見る" : "View Tickets"}</button>
-            ${config.mapUrl ? `<a class="btn ghost" href="${config.mapUrl}" target="_blank" rel="noreferrer">${state.lang === "jp" ? "マップ" : "Map"}</a>` : ``}
-            ${config.payments?.contactLine ? `<a class="btn ghost" href="${config.payments.contactLine}" target="_blank" rel="noreferrer">LINE</a>` : ``}
+          <div class="meta" style="margin-top:16px; gap:10px;">
+            ${ticketUrl ? `<a class="btn primary" id="buyTickets" href="${ticketUrl}" target="_blank" rel="noreferrer">${state.lang === "jp" ? "Lumaで購入" : "Buy on Luma"}</a>` : ``}
+            ${merchUrl ? `<a class="btn ghost" id="buyMerch" href="${merchUrl}" target="_blank" rel="noreferrer">${state.lang === "jp" ? "Merch" : "Merch Drop"}</a>` : ``}
+            ${lineUrl ? `<a class="btn ghost" id="contactLine" href="${lineUrl}" target="_blank" rel="noreferrer">LINE</a>` : ``}
+            ${igUrl ? `<a class="btn ghost" id="openIG" href="${igUrl}" target="_blank" rel="noreferrer">IG</a>` : ``}
+            <button class="btn ghost" id="openInvite2">${state.lang === "jp" ? "招待リンク作成" : "Invite Builder"}</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TICKETS -->
     <section class="section" id="tickets">
       <div class="section-inner">
-        <div style="display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-          <div>
-            <div class="kicker">${state.lang === "jp" ? "チケット" : "Tickets"}</div>
-            <h2 style="margin:8px 0 0;">${state.lang === "jp" ? "プランを選択" : "Choose your version"}</h2>
-          </div>
-          <button class="btn ghost" id="openInvite2">${state.lang === "jp" ? "招待リンク作成" : "Invite Builder"}</button>
-        </div>
-
-        <div class="grid" style="margin-top:16px;">
-          ${tierCards}
-        </div>
+        <div class="kicker">${state.lang === "jp" ? "チケット" : "Tickets"}</div>
+        <h2>${state.lang === "jp" ? "プランを選択" : "Choose your version"}</h2>
+        <div class="grid">${tierCards}</div>
       </div>
     </section>
 
-    <!-- LINEUP -->
-    ${lineup ? `
+    ${vipSteps ? `
     <section class="section">
       <div class="section-inner">
-        <div class="kicker">${state.lang === "jp" ? "ラインナップ" : "Lineup"}</div>
-        <h2 style="margin:8px 0 16px;">${state.lang === "jp" ? "出演者" : "Artists"}</h2>
-        <div class="list">${lineup}</div>
+        <div class="kicker">${t(config.vipFlow?.headline) || (state.lang === "jp" ? "VIP導線" : "VIP Flow")}</div>
+        <h2>${state.lang === "jp" ? "支払い後の流れ" : "After payment"}</h2>
+        <div class="grid">${vipSteps}</div>
       </div>
     </section>` : ``}
 
-    <!-- SCHEDULE -->
-    ${schedule ? `
+    ${photos ? `
     <section class="section">
       <div class="section-inner">
-        <div class="kicker">${state.lang === "jp" ? "タイムテーブル" : "Schedule"}</div>
-        <h2 style="margin:8px 0 16px;">${state.lang === "jp" ? "流れ" : "Flow"}</h2>
-        <div class="list">${schedule}</div>
+        <div class="kicker">${t(config.media?.photos?.headline) || "Photos"}</div>
+        <h2>${state.lang === "jp" ? "雰囲気" : "Vibe"}</h2>
+        <div class="gallery">${photos}</div>
       </div>
     </section>` : ``}
 
-    <!-- GALLERY -->
-    ${gallery ? `
+    ${videos ? `
     <section class="section">
       <div class="section-inner">
-        <div class="kicker">${t(config.gallery?.headline) || (state.lang === "jp" ? "ギャラリー" : "Gallery")}</div>
-        <h2 style="margin:8px 0 16px;">${state.lang === "jp" ? "過去の雰囲気" : "Past vibe"}</h2>
-        <div class="gallery">${gallery}</div>
+        <div class="kicker">${t(config.media?.videos?.headline) || "Videos"}</div>
+        <h2>${state.lang === "jp" ? "動画" : "Clips"}</h2>
+        <div class="grid">${videos}</div>
       </div>
     </section>` : ``}
 
-    <!-- PAYMENT -->
-    <section class="section">
-      <div class="section-inner">
-        <div class="kicker">${t(config.payments?.headline) || (state.lang === "jp" ? "支払い" : "Payment")}</div>
-        <h2 style="margin:8px 0 16px;">${state.lang === "jp" ? "お支払い方法" : "How to pay"}</h2>
-
-        <div class="grid">${payMethods}</div>
-
-        <div class="card" style="margin-top:14px;">
-          <div class="small">${state.lang === "jp" ? "支払い後、スクショをLINEへ送ってください。" : "After payment, send a screenshot via LINE."}</div>
-          ${config.payments?.contactLine ? `<div style="margin-top:12px;"><a class="btn primary" href="${config.payments.contactLine}" target="_blank" rel="noreferrer">${state.lang === "jp" ? "LINEで送る" : "Send on LINE"}</a></div>` : ``}
-        </div>
-
-        <div class="card" style="margin-top:14px;">
-          <div class="kicker">${state.lang === "jp" ? "ポリシー" : "Policy"}</div>
-          <div class="small" style="margin-top:8px;">${t(config.policy)}</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ -->
-    ${faq ? `
-    <section class="section">
-      <div class="section-inner">
-        <div class="kicker">FAQ</div>
-        <h2 style="margin:8px 0 16px;">${state.lang === "jp" ? "よくある質問" : "Questions"}</h2>
-        <div class="grid">${faq}</div>
-      </div>
-    </section>` : ``}
-
-    <!-- FOOTER -->
     <footer class="footer">
       <div class="section-inner">
         <div class="small">© ${new Date().getFullYear()} ${config.brand || "Event"}</div>
-        <div class="small" style="margin-top:8px;">
-          ${config.social?.instagram ? `<a href="${config.social.instagram}" target="_blank" rel="noreferrer">Instagram</a>` : ``}
-          ${config.social?.website ? ` • <a href="${config.social.website}" target="_blank" rel="noreferrer">Website</a>` : ``}
-        </div>
       </div>
     </footer>
   `;
 
-  // Wire buttons after render
-  $("ctaTickets").onclick = () => document.getElementById("tickets")?.scrollIntoView({ behavior:"smooth" });
-  $("openInvite2")?.addEventListener("click", () => openInvite());
+  // wire tracking
+  document.getElementById("buyTickets")?.addEventListener("click", () => track("click_buy_luma"));
+  document.getElementById("buyMerch")?.addEventListener("click", () => track("click_merch"));
+  document.getElementById("contactLine")?.addEventListener("click", () => track("click_line"));
+  document.getElementById("openIG")?.addEventListener("click", () => track("click_instagram"));
+  document.getElementById("openInvite2")?.addEventListener("click", () => openInvite());
 
-  // Tier select buttons
   document.querySelectorAll("[data-tier]").forEach(btn => {
     btn.addEventListener("click", () => {
       state.tier = btn.getAttribute("data-tier") || "";
-      // reflect selection + keep the link builder accurate
-      render(config);
+      track("select_tier", { tier: state.tier });
       openInvite();
+      wireInvite(config);
     });
   });
-}
 
-function openInvite(){
-  const o = $("inviteOverlay");
-  o.classList.remove("hidden");
-  o.setAttribute("aria-hidden","false");
-}
-
-function closeInvite(){
-  const o = $("inviteOverlay");
-  o.classList.add("hidden");
-  o.setAttribute("aria-hidden","true");
-}
-
-function wireInvite(config){
-  // Populate tier select
-  const sel = $("tierSelect");
-  sel.innerHTML = "";
-
-  const tiers = config.tiers || [];
-  const opt0 = document.createElement("option");
-  opt0.value = "";
-  opt0.textContent = state.lang === "jp" ? "チケット選択" : "Select ticket";
-  sel.appendChild(opt0);
-
-  tiers.forEach(tier => {
-    const opt = document.createElement("option");
-    opt.value = tier.id;
-    opt.textContent = `${t(tier.name)} — ¥${yen(tier.priceYen)}`;
-    sel.appendChild(opt);
+  document.querySelectorAll("[data-video='1']").forEach(a => {
+    a.addEventListener("click", () => track("click_video"));
   });
 
-  if (state.tier) sel.value = state.tier;
-
-  // Prefill inputs
-  $("toName").value = state.to;
-  $("fromName").value = state.from;
-
-  // Music
-  const audio = $("bgm");
-  const musicFile = config.music?.file;
-  const musicToggle = $("musicToggle");
-  const playBtn = $("playBtn");
-
-  if (musicFile) {
-    audio.src = bgPath(musicFile);
-    musicToggle.style.display = "block";
-    playBtn.style.display = state.music ? "block" : "none";
-  } else {
-    musicToggle.style.display = "none";
-    playBtn.style.display = "none";
-  }
-
-  // Handlers
-  $("toName").addEventListener("input", (e) => state.to = e.target.value);
-  $("fromName").addEventListener("input", (e) => state.from = e.target.value);
-  sel.addEventListener("change", (e) => state.tier = e.target.value);
-
-  $("copyLink").onclick = async () => {
-    const link = buildShareLink();
-    try{
-      await navigator.clipboard.writeText(link);
-      toast(state.lang === "jp" ? "コピーしました" : "Copied");
-    }catch{
-      window.prompt("Copy this link:", link);
-    }
+  $("ctaTop").onclick = () => {
+    track("click_top_cta");
+    if (ticketUrl) window.open(ticketUrl, "_blank", "noreferrer");
+    else document.getElementById("tickets")?.scrollIntoView({ behavior:"smooth" });
   };
-
-  $("enterPage").onclick = () => closeInvite();
-  $("closeInvite").onclick = () => closeInvite();
-  $("openInvite").onclick = () => openInvite();
-
-  $("musicToggle").onclick = () => {
-    state.music = !state.music;
-    if (!state.music) {
-      audio.pause();
-      $("playBtn").textContent = "Play Me";
-    }
-    playBtn.style.display = state.music ? "block" : "none";
-  };
-
-  $("playBtn").onclick = async () => {
-    try{
-      if (audio.paused) { await audio.play(); $("playBtn").textContent = state.lang === "jp" ? "停止" : "Pause"; }
-      else { audio.pause(); $("playBtn").textContent = "Play Me"; }
-    }catch{
-      toast(state.lang === "jp" ? "再生できません" : "Unable to play");
-    }
-  };
-}
-
-function wireLanguage(config){
-  $("langEn").onclick = () => { state.lang = "en"; setLangUI(); render(config); wireInvite(config); };
-  $("langJp").onclick = () => { state.lang = "jp"; setLangUI(); render(config); wireInvite(config); };
 }
 
 (async function main(){
   try{
+    state.ref = getRef();
     const config = await loadConfig();
     setLangUI();
     render(config);
     wireInvite(config);
-    wireLanguage(config);
+
+    $("langEn").onclick = () => { state.lang = "en"; setLangUI(); render(config); wireInvite(config); };
+    $("langJp").onclick = () => { state.lang = "jp"; setLangUI(); render(config); wireInvite(config); };
   }catch(e){
     $("app").innerHTML = `
       <section class="section">
