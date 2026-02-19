@@ -179,4 +179,103 @@ function wireOverlay(config) {
   // Populate tier select
   const sel = $("tierSelect");
   sel.innerHTML = "";
-  (config.tiers || []).forEach((tie
+  (config.tiers || []).forEach((tier) => {
+    const opt = document.createElement("option");
+    opt.value = tier.id;
+    opt.textContent = `VERSION: ${t(tier.name).toUpperCase()}`;
+    sel.appendChild(opt);
+  });
+  if (state.tier) sel.value = state.tier;
+
+  // Language toggle
+  $("langEn").onclick = () => { state.lang = "en"; setLangUI(); renderPage(config); };
+  $("langJp").onclick = () => { state.lang = "jp"; setLangUI(); renderPage(config); };
+
+  // Inputs
+  $("toName").addEventListener("input", (e) => { state.to = e.target.value; renderPage(config); });
+  $("fromName").addEventListener("input", (e) => { state.from = e.target.value; renderPage(config); });
+  sel.addEventListener("change", (e) => { state.tier = e.target.value; });
+
+  // Copy link
+  $("copyLink").onclick = async () => {
+    const link = buildShareLink();
+    try {
+      await navigator.clipboard.writeText(link);
+      toast(state.lang === "jp" ? "リンクをコピーしました" : "Link copied!");
+    } catch {
+      window.prompt("Copy this link:", link);
+    }
+  };
+
+  // Music toggle + play button
+  const audio = $("bgm");
+  const playBtn = $("playBtn");
+  const musicToggle = $("musicToggle");
+
+  const musicFile = config.music?.file;
+  if (musicFile) audio.src = bgPath(musicFile);
+
+  function updateMusicUI() {
+    if (!musicFile) {
+      musicToggle.style.display = "none";
+      playBtn.style.display = "none";
+      return;
+    }
+    musicToggle.style.display = "inline-block";
+    playBtn.style.display = state.music ? "block" : "none";
+  }
+
+  musicToggle.onclick = () => {
+    state.music = !state.music;
+    updateMusicUI();
+    if (!state.music) {
+      audio.pause();
+      playBtn.textContent = "PLAY ME!";
+    }
+  };
+
+  playBtn.onclick = async () => {
+    try {
+      if (audio.paused) {
+        await audio.play();
+        playBtn.textContent = state.lang === "jp" ? "停止" : "PAUSE";
+      } else {
+        audio.pause();
+        playBtn.textContent = "PLAY ME!";
+      }
+    } catch {
+      toast(state.lang === "jp" ? "再生できません（ブラウザ制限）" : "Unable to play (browser restriction)");
+    }
+  };
+
+  updateMusicUI();
+
+  // Enter page hides overlay (but keeps URL state; copying uses params)
+  $("enterBtn").onclick = () => {
+    $("inviteOverlay").classList.add("hidden");
+  };
+
+  // Auto-hide overlay if user already has params (optional)
+  const hasAny = !!(state.to || state.from || state.tier || state.music);
+  if (hasAny) $("inviteOverlay").classList.add("hidden");
+}
+
+(async function main(){
+  try{
+    const config = await loadConfig();
+    renderPage(config);
+    wireOverlay(config);
+  }catch(e){
+    $("app").innerHTML = `
+      <section class="section">
+        <div class="bg"></div>
+        <div class="content">
+          <div class="card">
+            <h2>Error</h2>
+            <p class="small">${String(e.message || e)}</p>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+})();
