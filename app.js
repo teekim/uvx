@@ -2,7 +2,7 @@ const BASE = "/uvx"; // GitHub Pages subpath for this repo
 
 const qs = new URLSearchParams(location.search);
 const state = {
-  event: qs.get("event") || "_template",
+  event: qs.get("event") || "template",
   lang: (qs.get("lang") || "en").toLowerCase() === "jp" ? "jp" : "en",
   ref: qs.get("ref") || ""
 };
