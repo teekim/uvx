@@ -1,0 +1,33 @@
+{
+  "brand": "UVX",
+  "slug": "_template",
+  "title": { "en": "UVX Event Title", "jp": "UVX イベント名" },
+  "subtitle": { "en": "Tokyo • Neon • VIP Experience", "jp": "東京・ネオン・VIP体験" },
+  "description": { "en": "Short event description.", "jp": "イベント説明（短く）" },
+  "dateText": { "en": "Sat MMM DD, YYYY • 18:00–23:00", "jp": "YYYY年MM月DD日(土) 18:00–23:00" },
+  "venueText": { "en": "Tokyo (details after payment)", "jp": "東京（支払い後に詳細案内）" },
+  "sections": { "heroBg": "hero.jpg" },
+  "music": { "file": "bgm.mp3" },
+  "links": {
+    "tickets": "https://lu.ma/XXXXXX",
+    "merch": "https://YOURSHOP.com/collections/uvx",
+    "line": "https://line.me/ti/p/XXXXXXXX",
+    "instagram": "https://instagram.com/uvxjapan"
+  },
+  "tiers": [
+    { "id": "men", "name": { "en": "Standard (Men)", "jp": "スタンダード（男性）" }, "priceYen": 9500, "includes": { "en": "Entrance", "jp": "入場" } },
+    { "id": "women", "name": { "en": "Women", "jp": "女性" }, "priceYen": 2500, "includes": { "en": "Entrance", "jp": "入場" } }
+  ],
+  "vipFlow": {
+    "headline": { "en": "VIP Flow (After Payment)", "jp": "VIP導線（支払い後）" },
+    "steps": [
+      { "title": { "en": "1) Buy ticket on Luma", "jp": "1) Lumaでチケット購入" }, "text": { "en": "Complete your purchase.", "jp": "購入を完了してください。" } },
+      { "title": { "en": "2) Send proof on LINE", "jp": "2) LINEでスクショ送付" }, "text": { "en": "Send screenshot.", "jp": "スクショを送ってください。" } },
+      { "title": { "en": "3) Receive venue details", "jp": "3) 会場詳細を受け取る" }, "text": { "en": "We share details after confirmation.", "jp": "確認後に案内します。" } }
+    ]
+  },
+  "media": {
+    "photos": { "headline": { "en": "Photos", "jp": "写真" }, "images": ["p1.jpg", "p2.jpg"] },
+    "videos": { "headline": { "en": "Videos", "jp": "動画" }, "items": [{ "title": { "en": "Aftermovie", "jp": "アフタームービー" }, "url": "https://www.youtube.com/watch?v=XXXXXXXX" }] }
+  }
+}
