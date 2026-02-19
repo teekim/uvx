@@ -242,4 +242,29 @@ h2{margin:0 0 14px}
 .video iframe{
   width:100%;
   aspect-ratio:16/9;
-  bord
+  border:0;
+  display:block;
+}
+
+.input, .select{
+  width:100%;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.22);
+  color:var(--fg);
+  outline:none;
+}
+.input::placeholder{color:rgba(245,246,255,.45)}
+.select{cursor:pointer}
+
+@media (max-width: 720px){
+  .card{padding:20px}
+  .meta{gap:8px}
+  .pill{padding:9px 10px}
+}
+
+.footer{
+  padding:44px 16px;
+  color:rgba(245,246,255,.60);
+}
