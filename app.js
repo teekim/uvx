@@ -75,4 +75,65 @@ function render(cfg){
           <div class="meta" style="margin-top:16px;">
             <a class="btn primary" href="${ticketUrl}" target="_blank" rel="noreferrer">${state.lang==="jp"?"Lumaで購入":"Buy on Luma"}</a>
             ${cfg.links?.merch ? `<a class="btn" href="${cfg.links.merch}" target="_blank" rel="noreferrer">Merch</a>` : ``}
-            ${cfg.links?.line ? `<a class="btn" href="${cfg.links.line}" target="_blank" rel="noreferrer">LINE_
+            ${cfg.links?.line ? `<a class="btn" href="${cfg.links.line}" target="_blank" rel="noreferrer">LINE</a>` : ``}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-inner">
+        <div class="kicker">${state.lang==="jp"?"チケット":"Tickets"}</div>
+        <h2 style="margin:8px 0 16px;">${state.lang==="jp"?"料金":"Pricing"}</h2>
+        <div class="grid">${tiers}</div>
+      </div>
+    </section>
+
+    ${vipSteps ? `
+    <section class="section">
+      <div class="section-inner">
+        <div class="kicker">${t(cfg.vipFlow?.headline) || (state.lang==="jp"?"VIP導線":"VIP Flow")}</div>
+        <h2 style="margin:8px 0 16px;">${state.lang==="jp"?"支払い後の流れ":"After payment"}</h2>
+        <div class="grid">${vipSteps}</div>
+      </div>
+    </section>` : ``}
+
+    ${photos ? `
+    <section class="section">
+      <div class="section-inner">
+        <div class="kicker">${t(cfg.media?.photos?.headline) || "Photos"}</div>
+        <h2 style="margin:8px 0 16px;">${state.lang==="jp"?"雰囲気":"Vibe"}</h2>
+        <div class="gallery">${photos}</div>
+      </div>
+    </section>` : ``}
+
+    <section class="section">
+      <div class="section-inner">
+        <div class="small">© ${new Date().getFullYear()} ${cfg.brand || "Event"}</div>
+      </div>
+    </section>
+  `;
+}
+
+(async function main(){
+  try{
+    const cfg = await loadConfig();
+    setLangUI();
+    render(cfg);
+
+    $("langEn").onclick = () => { state.lang="en"; setLangUI(); render(cfg); };
+    $("langJp").onclick = () => { state.lang="jp"; setLangUI(); render(cfg); };
+  }catch(e){
+    $("app").innerHTML = `
+      <section class="section">
+        <div class="section-inner">
+          <div class="card">
+            <div class="kicker">Error</div>
+            <div class="small" style="margin-top:8px;">${String(e.message || e)}</div>
+            <div class="small" style="margin-top:10px;">Check: /events/${state.event}/config.json</div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+})();
