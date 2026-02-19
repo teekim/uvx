@@ -1,13 +1,13 @@
-// app.js (REPO ROOT) — REG-like poster sections + per-section backgrounds + optional music
-
 const qs = new URLSearchParams(window.location.search);
 
 const state = {
   event: qs.get("event") || "uvx-mar-2026",
   lang: (qs.get("lang") || "en").toLowerCase() === "jp" ? "jp" : "en",
-  name: qs.get("name") || "",
+  to: qs.get("to") || "",
+  from: qs.get("from") || "",
   ref: qs.get("ref") || "",
-  tier: qs.get("tier") || ""
+  tier: qs.get("tier") || "",
+  music: qs.get("music") === "1"
 };
 
 const $ = (id) => document.getElementById(id);
@@ -22,33 +22,24 @@ function yen(n) {
   return new Intl.NumberFormat("ja-JP").format(Number(n || 0));
 }
 
-function setLangUI() {
-  $("langEn")?.classList.toggle("active", state.lang === "en");
-  $("langJp")?.classList.toggle("active", state.lang === "jp");
-
-  // optional: change placeholders by language
-  const nameInput = $("guestName");
-  if (nameInput) nameInput.placeholder = state.lang === "jp" ? "ご招待客（任意）" : "Distinguished Guest";
-}
-
-function buildShareLink() {
-  const u = new URL(window.location.href);
-  u.searchParams.set("event", state.event);
-  u.searchParams.set("lang", state.lang);
-
-  if (state.name) u.searchParams.set("name", state.name); else u.searchParams.delete("name");
-  if (state.ref) u.searchParams.set("ref", state.ref); else u.searchParams.delete("ref");
-  if (state.tier) u.searchParams.set("tier", state.tier); else u.searchParams.delete("tier");
-
-  return u.toString();
-}
-
 function toast(msg) {
   const el = $("toast");
   if (!el) return;
   el.textContent = msg;
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 1200);
+}
+
+function buildShareLink() {
+  const u = new URL(window.location.href);
+  u.searchParams.set("event", state.event);
+  u.searchParams.set("lang", state.lang);
+  if (state.to) u.searchParams.set("to", state.to); else u.searchParams.delete("to");
+  if (state.from) u.searchParams.set("from", state.from); else u.searchParams.delete("from");
+  if (state.ref) u.searchParams.set("ref", state.ref); else u.searchParams.delete("ref");
+  if (state.tier) u.searchParams.set("tier", state.tier); else u.searchParams.delete("tier");
+  if (state.music) u.searchParams.set("music", "1"); else u.searchParams.delete("music");
+  return u.toString();
 }
 
 async function loadConfig() {
@@ -58,55 +49,35 @@ async function loadConfig() {
   return await res.json();
 }
 
-function bgPath(eventSlug, fileName) {
+function bgPath(fileName) {
   if (!fileName) return "";
-  return `./events/${eventSlug}/assets/${fileName}`;
+  return `./events/${state.event}/assets/${fileName}`;
 }
 
-function render(config) {
-  document.title = `${t(config.title) || "Event"} | ${config.brand || "Event"}`;
-  $("brand").textContent = config.brand || "EVENT";
+function setLangUI() {
+  $("langEn")?.classList.toggle("active", state.lang === "en");
+  $("langJp")?.classList.toggle("active", state.lang === "jp");
 
-  // Set up tier select
-  const select = $("tierSelect");
-  if (select) {
-    select.innerHTML = "";
-    const opt0 = document.createElement("option");
-    opt0.value = "";
-    opt0.textContent = state.lang === "jp" ? "チケット種別" : "Ticket Type";
-    select.appendChild(opt0);
+  $("overlayTitle").textContent = state.lang === "jp" ? "招待リンクを作成" : "PERSONALIZE INVITATION";
+  $("copyText").textContent = state.lang === "jp" ? "リンクをコピー" : "COPY LINK TO SEND";
+  $("enterText").textContent = state.lang === "jp" ? "ページを見る" : "ENTER PAGE";
+  $("musicLabel").textContent = state.lang === "jp" ? "音楽を追加（任意）" : "ADD MUSIC (OPTIONAL)";
 
-    (config.tiers || []).forEach((tier) => {
-      const opt = document.createElement("option");
-      opt.value = tier.id;
-      opt.textContent = `${t(tier.name)} — ¥${yen(tier.priceYen)}`;
-      select.appendChild(opt);
-    });
+  const toName = $("toName");
+  const fromName = $("fromName");
+  if (toName) toName.placeholder = state.lang === "jp" ? "TO: ゲスト名" : "TO: GUEST NAME";
+  if (fromName) fromName.placeholder = state.lang === "jp" ? "FROM: あなたの名前" : "FROM: YOUR NAME";
+}
 
-    if (state.tier) select.value = state.tier;
-  }
+function renderPage(config) {
+  const heroBg = bgPath(config.sections?.heroBg || config.heroImage);
+  const ticketsBg = bgPath(config.sections?.ticketsBg) || heroBg;
+  const dressBg = bgPath(config.sections?.dressBg) || heroBg;
+  const galleryBg = bgPath(config.sections?.galleryBg) || heroBg;
+  const paymentBg = bgPath(config.sections?.paymentBg) || heroBg;
 
-  // Music (optional)
-  const musicBtn = $("musicBtn");
-  const audio = $("bgm");
-  const musicFile = config.music?.file;
-  if (musicBtn && audio && musicFile) {
-    audio.src = bgPath(state.event, musicFile);
-    musicBtn.style.display = "inline-block";
-    musicBtn.textContent = "Play Me!";
-  } else if (musicBtn) {
-    musicBtn.style.display = "none";
-  }
-
-  const guest =
-    (state.name && state.name.trim()) ||
-    (state.lang === "jp" ? "ご招待客" : "Distinguished Guest");
-
-  const heroBg = bgPath(state.event, config.sections?.heroBg || config.heroImage);
-  const ticketsBg = bgPath(state.event, config.sections?.ticketsBg);
-  const dressBg = bgPath(state.event, config.sections?.dressBg);
-  const galleryBg = bgPath(state.event, config.sections?.galleryBg);
-  const paymentBg = bgPath(state.event, config.sections?.paymentBg);
+  const toText = state.to?.trim() || (state.lang === "jp" ? "ご招待客" : "Distinguished Guest");
+  const fromText = state.from?.trim() || (state.lang === "jp" ? "主催者" : "Host");
 
   const tiersHtml = (config.tiers || []).map((tier) => `
     <div class="tier">
@@ -117,14 +88,14 @@ function render(config) {
   `).join("");
 
   const galleryHtml = (config.gallery?.images || []).map((img) => {
-    const src = bgPath(state.event, img);
+    const src = bgPath(img);
     return `<img src="${src}" alt="gallery" loading="lazy">`;
   }).join("");
 
   const payHtml = (config.payments?.methods || []).map((m) => {
     const name = t(m.name || m.id);
     const note = t(m.note);
-    const qr = bgPath(state.event, m.qr);
+    const qr = bgPath(m.qr);
     return `
       <div class="card" style="padding:18px;border-radius:22px;">
         <h2>${name}</h2>
@@ -134,11 +105,7 @@ function render(config) {
     `;
   }).join("");
 
-  const app = $("app");
-  if (!app) return;
-
-  app.innerHTML = `
-    <!-- HERO -->
+  $("app").innerHTML = `
     <section class="section">
       <div class="bg" style="background-image:url('${heroBg}')"></div>
       <div class="content">
@@ -146,15 +113,15 @@ function render(config) {
           <div class="small">${t(config.subtitle)}</div>
           <h1>${t(config.title)}</h1>
           <p>${t(config.dateText)} • ${t(config.venueText)}</p>
-          <p class="small">${state.lang === "jp" ? "招待：" : "Invitation for:"} <strong style="color:rgba(244,244,247,.95)">${guest}</strong></p>
+          <p class="small">TO: <strong style="color:rgba(244,244,247,.95)">${toText}</strong></p>
+          <p class="small">FROM: <strong style="color:rgba(244,244,247,.85)">${fromText}</strong></p>
           ${config.mapUrl ? `<a class="btn" href="${config.mapUrl}" target="_blank" rel="noreferrer">${state.lang === "jp" ? "マップを見る" : "Open Map"}</a>` : ``}
         </div>
       </div>
     </section>
 
-    <!-- TICKETS -->
     <section class="section">
-      <div class="bg" style="background-image:url('${ticketsBg || heroBg}')"></div>
+      <div class="bg" style="background-image:url('${ticketsBg}')"></div>
       <div class="content">
         <div class="card">
           <h2>${state.lang === "jp" ? "チケット" : "Tickets"}</h2>
@@ -164,9 +131,8 @@ function render(config) {
       </div>
     </section>
 
-    <!-- DRESS CODE -->
     <section class="section">
-      <div class="bg" style="background-image:url('${dressBg || heroBg}')"></div>
+      <div class="bg" style="background-image:url('${dressBg}')"></div>
       <div class="content">
         <div class="card">
           <h2>${state.lang === "jp" ? "ドレスコード" : "Dress Code"}</h2>
@@ -175,9 +141,8 @@ function render(config) {
       </div>
     </section>
 
-    <!-- GALLERY -->
     <section class="section">
-      <div class="bg" style="background-image:url('${galleryBg || heroBg}')"></div>
+      <div class="bg" style="background-image:url('${galleryBg}')"></div>
       <div class="content">
         <div class="card">
           <h2>${t(config.gallery?.headline) || (state.lang === "jp" ? "過去イベント" : "Past Events")}</h2>
@@ -186,9 +151,8 @@ function render(config) {
       </div>
     </section>
 
-    <!-- PAYMENT -->
     <section class="section">
-      <div class="bg" style="background-image:url('${paymentBg || heroBg}')"></div>
+      <div class="bg" style="background-image:url('${paymentBg}')"></div>
       <div class="content">
         <div class="card">
           <h2>${t(config.payments?.headline) || (state.lang === "jp" ? "お支払い方法" : "How to Pay")}</h2>
@@ -205,74 +169,14 @@ function render(config) {
   `;
 }
 
-function wireControls(config) {
+function wireOverlay(config) {
   setLangUI();
 
-  const nameInput = $("guestName");
-  if (nameInput) nameInput.value = state.name;
+  // Prefill from URL
+  $("toName").value = state.to;
+  $("fromName").value = state.from;
 
-  $("langEn")?.addEventListener("click", () => { state.lang = "en"; setLangUI(); render(config); });
-  $("langJp")?.addEventListener("click", () => { state.lang = "jp"; setLangUI(); render(config); });
-
-  nameInput?.addEventListener("input", (e) => { state.name = e.target.value; render(config); });
-
-  const tierSelect = $("tierSelect");
-  tierSelect?.addEventListener("change", (e) => {
-    state.tier = e.target.value;
-    render(config); // keep UI in sync
-  });
-
-  $("copyLink")?.addEventListener("click", async () => {
-    const link = buildShareLink();
-    try {
-      await navigator.clipboard.writeText(link);
-      toast(state.lang === "jp" ? "リンクをコピーしました" : "Link copied!");
-    } catch {
-      window.prompt("Copy this link:", link);
-    }
-  });
-
-  // Music toggle (optional)
-  const musicBtn = $("musicBtn");
-  const audio = $("bgm");
-  if (musicBtn && audio && config.music?.file) {
-    musicBtn.addEventListener("click", async () => {
-      try {
-        if (audio.paused) {
-          await audio.play();
-          musicBtn.textContent = "Pause";
-        } else {
-          audio.pause();
-          musicBtn.textContent = "Play Me!";
-        }
-      } catch {
-        // autoplay restrictions or blocked play
-        toast(state.lang === "jp" ? "再生できません（ブラウザ制限）" : "Unable to play (browser restriction)");
-      }
-    });
-  }
-}
-
-(async function main() {
-  try {
-    const config = await loadConfig();
-    render(config);
-    wireControls(config);
-  } catch (e) {
-    const app = $("app");
-    if (app) {
-      app.innerHTML = `
-        <section class="section">
-          <div class="bg"></div>
-          <div class="content">
-            <div class="card">
-              <h2>Error</h2>
-              <p class="small">${String(e.message || e)}</p>
-              <p class="small">Check: /events/&lt;slug&gt;/config.json and assets filenames.</p>
-            </div>
-          </div>
-        </section>
-      `;
-    }
-  }
-})();
+  // Populate tier select
+  const sel = $("tierSelect");
+  sel.innerHTML = "";
+  (config.tiers || []).forEach((tie
