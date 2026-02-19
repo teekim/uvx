@@ -27,9 +27,8 @@ function asset(file){
   return `${BASE}/events/${state.event}/assets/${file}`;
 }
 
-/** --- REF + TRACKING (minimal, reliable) --- **/
+/** --- REF + TRACKING (local) --- **/
 function getRef(){
-  // precedence: URL ref > saved ref
   const urlRef = qs.get("ref");
   const saved = localStorage.getItem("uvx_ref");
   const ref = (urlRef || saved || "").trim();
@@ -65,7 +64,7 @@ function track(name, data = {}){
     const key = "uvx_track";
     const arr = JSON.parse(localStorage.getItem(key) || "[]");
     arr.push(payload);
-    localStorage.setItem(key, JSON.stringify(arr.slice(-300)));
+    localStorage.setItem(key, JSON.stringify(arr.slice(-400)));
   }catch{}
 }
 
@@ -84,7 +83,7 @@ function setLangUI(){
   $("langJp")?.setAttribute("aria-selected", state.lang === "jp");
 }
 
-/** --- INVITE LINK BUILDING --- **/
+/** --- INVITE LINK --- **/
 function buildInviteLink(){
   const u = new URL(location.href);
   u.searchParams.set("event", state.event);
@@ -108,6 +107,33 @@ async function copyText(text){
   await navigator.clipboard.writeText(text);
 }
 
+function bulletList(items){
+  if (!items || !items.length) return "";
+  return `
+    <div class="list">
+      ${items.map(it => `
+        <div class="bullet">
+          <div class="dot"></div>
+          <div class="small">${t(it)}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function ytEmbed(url){
+  try{
+    const u = new URL(url);
+    const id = u.searchParams.get("v");
+    if (id) return `https://www.youtube.com/embed/${id}`;
+    if (u.hostname.includes("youtu.be")) {
+      const pid = u.pathname.replace("/", "");
+      if (pid) return `https://www.youtube.com/embed/${pid}`;
+    }
+  }catch{}
+  return "";
+}
+
 function render(cfg){
   document.title = `${t(cfg.title) || "Event"} | ${cfg.brand || "Event"}`;
   $("brand").textContent = cfg.brand || "EVENT";
@@ -115,17 +141,14 @@ function render(cfg){
   const heroBgFile = cfg.sections?.heroBg || "hero.jpg";
   const heroBg = asset(heroBgFile);
 
-  // Page personalization from URL
   const toQ = qs.get("to") || "";
   const fromQ = qs.get("from") || "";
   const tierQ = qs.get("tier") || "";
 
-  // Default values for widget
   const tierDefault = tierQ || (cfg.tiers?.[0]?.id || "");
   const toDefault = toQ;
   const fromDefault = fromQ;
 
-  // Append ref to outgoing links
   const ticketUrl = withRef(cfg.links?.tickets || "#");
   const merchUrl  = withRef(cfg.links?.merch || "");
   const lineUrl   = withRef(cfg.links?.line || "");
@@ -151,13 +174,41 @@ function render(cfg){
     </div>
   `).join("");
 
-  const photosHtml = (cfg.media?.photos?.images || []).map(img => `
-    <img src="${asset(img)}" alt="photo" loading="lazy">
-  `).join("");
+  const photos = cfg.media?.photos?.images || [];
+  const photosHtml = photos.length ? `
+    <section class="section">
+      <div class="section-inner">
+        <div class="kicker">${t(cfg.media?.photos?.headline) || "Photos"}</div>
+        <h2>${state.lang==="jp" ? "雰囲気" : "Vibe"}</h2>
+        <div class="gallery">
+          ${photos.map(img => `<img src="${asset(img)}" alt="photo" loading="lazy">`).join("")}
+        </div>
+      </div>
+    </section>
+  ` : "";
 
-  // Optional: show selected tier name if tier param matches config
-  const tierObj = (cfg.tiers || []).find(x => x.id === tierQ);
-  const tierLabel = tierObj ? `${t(tierObj.name)} — ¥${yen(tierObj.priceYen)}` : "";
+  const videos = cfg.media?.videos?.items || [];
+  const videosHtml = videos.length ? `
+    <section class="section">
+      <div class="section-inner">
+        <div class="kicker">${t(cfg.media?.videos?.headline) || "Videos"}</div>
+        <h2>${state.lang==="jp" ? "動画" : "Videos"}</h2>
+        <div class="videos">
+          ${videos.map(v => {
+            if (v.type === "youtube") {
+              const e = ytEmbed(v.url);
+              return e ? `
+                <div class="video">
+                  <iframe src="${e}" title="${t(v.title) || "Video"}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+              ` : "";
+            }
+            return "";
+          }).join("")}
+        </div>
+      </div>
+    </section>
+  ` : "";
 
   $("app").innerHTML = `
     <section class="section hero">
@@ -166,14 +217,22 @@ function render(cfg){
         <div class="card">
           <div class="kicker">${t(cfg.subtitle)}</div>
           <h1>${t(cfg.title)}</h1>
-          <div class="small">${t(cfg.description)}</div>
+
+          ${cfg.hero?.tagline ? `<div class="hero-tagline">${t(cfg.hero.tagline)}</div>` : ""}
+
+          ${cfg.hero?.lead ? `<div class="small" style="margin-top:10px;">${t(cfg.hero.lead)}</div>` : ""}
+
+          ${(cfg.hero?.vipCallout) ? `
+            <div class="box" style="margin-top:14px;">
+              <div class="small" style="white-space:pre-line;">${t(cfg.hero.vipCallout)}</div>
+            </div>
+          ` : ""}
 
           ${(toQ || fromQ || tierQ) ? `
-          <div class="small" style="margin-top:10px;">
-            ${toQ ? (state.lang==="jp" ? `招待先: ${toQ}` : `Invitation for: ${toQ}`) : ``}
-            ${(toQ && fromQ) ? (state.lang==="jp" ? `（招待: ${fromQ}）` : ` (from ${fromQ})`) : (fromQ ? (state.lang==="jp" ? `招待: ${fromQ}` : `From: ${fromQ}`) : ``)}
-            ${tierLabel ? ` • ${tierLabel}` : ``}
-          </div>
+            <div class="small" style="margin-top:12px;">
+              ${toQ ? (state.lang==="jp" ? `招待先: ${toQ}` : `Invitation for: ${toQ}`) : ``}
+              ${(toQ && fromQ) ? (state.lang==="jp" ? `（招待: ${fromQ}）` : ` (from ${fromQ})`) : (fromQ ? (state.lang==="jp" ? `招待: ${fromQ}` : `From: ${fromQ}`) : ``)}
+            </div>
           ` : ``}
 
           <div class="meta">
@@ -182,8 +241,10 @@ function render(cfg){
             ${getRef() ? `<div class="pill">REF: ${getRef()}</div>` : ``}
           </div>
 
+          <div class="hr"></div>
+
           <!-- Personalize Invitation -->
-          <div style="margin-top:18px;" class="box">
+          <div class="box">
             <div class="kicker">${state.lang==="jp" ? "招待をカスタマイズ" : "Personalize Invitation"}</div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
@@ -205,14 +266,16 @@ function render(cfg){
               </button>
             </div>
 
-            <div id="copyStatus" class="small" style="margin-top:8px;opacity:.85;"></div>
+            <div id="copyStatus" class="small" style="margin-top:8px;opacity:.9;"></div>
           </div>
 
           <div class="meta" style="margin-top:16px;">
-            <a class="btn primary" id="buyTickets" href="${ticketUrl}" target="_blank" rel="noreferrer">${state.lang==="jp"?"Lumaで購入":"Buy on Luma"}</a>
-            ${merchUrl ? `<a class="btn" id="buyMerch" href="${merchUrl}" target="_blank" rel="noreferrer">Merch</a>` : ``}
+            <a class="btn primary" id="buyTickets" href="${ticketUrl}" target="_blank" rel="noreferrer">
+              ${state.lang==="jp" ? "【今すぐ前売特典で予約する】" : "GET TICKETS"}
+            </a>
+            ${igUrl ? `<a class="btn" id="openIG" href="${igUrl}" target="_blank" rel="noreferrer">Instagram</a>` : ``}
             ${lineUrl ? `<a class="btn" id="openLine" href="${lineUrl}" target="_blank" rel="noreferrer">LINE</a>` : ``}
-            ${igUrl ? `<a class="btn" id="openIG" href="${igUrl}" target="_blank" rel="noreferrer">IG</a>` : ``}
+            ${merchUrl ? `<a class="btn" id="buyMerch" href="${merchUrl}" target="_blank" rel="noreferrer">Merch</a>` : ``}
           </div>
         </div>
       </div>
@@ -220,44 +283,100 @@ function render(cfg){
 
     <section class="section">
       <div class="section-inner">
-        <div class="kicker">${state.lang==="jp"?"チケット":"Tickets"}</div>
-        <h2>${state.lang==="jp"?"料金":"Pricing"}</h2>
+        <div class="kicker">${state.lang==="jp" ? "チケット" : "Tickets"}</div>
+        <h2>${state.lang==="jp" ? "料金" : "Pricing"}</h2>
         <div class="grid">${tiersHtml}</div>
       </div>
     </section>
 
-    ${(cfg.vipFlow?.steps?.length || 0) ? `
-    <section class="section">
-      <div class="section-inner">
-        <div class="kicker">${t(cfg.vipFlow?.headline) || (state.lang==="jp"?"VIP導線":"VIP Flow")}</div>
-        <h2>${state.lang==="jp"?"支払い後の流れ":"After payment"}</h2>
-        <div class="grid">${vipStepsHtml}</div>
-      </div>
-    </section>` : ``}
+    ${(cfg.content?.included?.items?.length || 0) ? `
+      <section class="section">
+        <div class="section-inner">
+          <div class="kicker">${t(cfg.content.included.headline)}</div>
+          <h2>${t(cfg.content.included.headline)}</h2>
+          ${bulletList(cfg.content.included.items)}
+        </div>
+      </section>
+    ` : ""}
 
-    ${(cfg.media?.photos?.images?.length || 0) ? `
-    <section class="section">
-      <div class="section-inner">
-        <div class="kicker">${t(cfg.media?.photos?.headline) || "Photos"}</div>
-        <h2>${state.lang==="jp"?"雰囲気":"Vibe"}</h2>
-        <div class="gallery">${photosHtml}</div>
-      </div>
-    </section>` : ``}
+    ${(cfg.content?.performers?.items?.length || 0) ? `
+      <section class="section">
+        <div class="section-inner">
+          <div class="kicker">${t(cfg.content.performers.headline)}</div>
+          <h2>${t(cfg.content.performers.headline)}</h2>
+          ${bulletList(cfg.content.performers.items)}
+        </div>
+      </section>
+    ` : ""}
+
+    ${(cfg.content?.music?.text) ? `
+      <section class="section">
+        <div class="section-inner">
+          <div class="kicker">${t(cfg.content.music.headline)}</div>
+          <h2>${t(cfg.content.music.headline)}</h2>
+          <div class="box"><div class="small">${t(cfg.content.music.text)}</div></div>
+        </div>
+      </section>
+    ` : ""}
+
+    ${(cfg.content?.dress?.text) ? `
+      <section class="section">
+        <div class="section-inner">
+          <div class="kicker">${t(cfg.content.dress.headline)}</div>
+          <h2>${t(cfg.content.dress.headline)}</h2>
+          <div class="box"><div class="small">${t(cfg.content.dress.text)}</div></div>
+        </div>
+      </section>
+    ` : ""}
+
+    ${(cfg.content?.drinks?.text) ? `
+      <section class="section">
+        <div class="section-inner">
+          <div class="kicker">${t(cfg.content.drinks.headline)}</div>
+          <h2>${t(cfg.content.drinks.headline)}</h2>
+          <div class="box"><div class="small">${t(cfg.content.drinks.text)}</div></div>
+        </div>
+      </section>
+    ` : ""}
+
+    ${(cfg.content?.vip?.text) ? `
+      <section class="section">
+        <div class="section-inner">
+          <div class="kicker">${t(cfg.content.vip.headline)}</div>
+          <h2>${t(cfg.content.vip.headline)}</h2>
+          <div class="box"><div class="small">${t(cfg.content.vip.text)}</div></div>
+        </div>
+      </section>
+    ` : ""}
+
+    ${(cfg.vipFlow?.steps?.length || 0) ? `
+      <section class="section">
+        <div class="section-inner">
+          <div class="kicker">${t(cfg.vipFlow.headline) || (state.lang==="jp"?"支払い後の流れ":"After Payment")}</div>
+          <h2>${t(cfg.vipFlow.headline) || (state.lang==="jp"?"支払い後の流れ":"After Payment")}</h2>
+          <div class="grid">${vipStepsHtml}</div>
+        </div>
+      </section>
+    ` : ""}
+
+    ${videosHtml}
+    ${photosHtml}
 
     <footer class="footer">
       <div class="section-inner">
-        <div class="small">© ${new Date().getFullYear()} ${cfg.brand || "Event"}</div>
+        ${cfg.policy ? `<div class="small">${t(cfg.policy)}</div>` : ``}
+        <div class="small" style="margin-top:10px;">© ${new Date().getFullYear()} ${cfg.brand || "Event"}</div>
       </div>
     </footer>
   `;
 
-  // click tracking
+  // tracking
   document.getElementById("buyTickets")?.addEventListener("click", () => track("click_buy_luma", { href: ticketUrl }));
   document.getElementById("buyMerch")?.addEventListener("click", () => track("click_merch", { href: merchUrl }));
   document.getElementById("openLine")?.addEventListener("click", () => track("click_line", { href: lineUrl }));
   document.getElementById("openIG")?.addEventListener("click", () => track("click_instagram", { href: igUrl }));
 
-  // invite copy + tracking
+  // invite copy
   document.getElementById("copyInvite")?.addEventListener("click", async () => {
     try{
       const link = buildInviteLink();
