@@ -1,21 +1,12 @@
-// events/uvx-mar-2026/config.json (UPDATE THIS EVENT FILE)
-// Add "sections" + optional "music". Filenames must exist in events/uvx-mar-2026/assets/
 {
   "brand": "UVX",
   "slug": "uvx-mar-2026",
-
   "title": { "en": "UVX March Neon Party", "jp": "UVX 3月ネオンパーティー" },
   "subtitle": { "en": "Tokyo • Neon • VIP Experience", "jp": "東京・ネオン・VIP体験" },
-
   "dateText": { "en": "Sat Mar XX, 2026 • 18:00–23:00", "jp": "2026年3月XX日(土) 18:00–23:00" },
   "venueText": { "en": "Tokyo (details after payment)", "jp": "東京（支払い後に詳細案内）" },
   "mapUrl": "https://maps.google.com/",
-
-  "dressCode": {
-    "en": "Elegant / Neon accents recommended",
-    "jp": "エレガント（ネオンアクセント推奨）"
-  },
-
+  "dressCode": { "en": "Elegant / Neon accents recommended", "jp": "エレガント（ネオンアクセント推奨）" },
   "sections": {
     "heroBg": "hero.jpg",
     "ticketsBg": "tickets.jpg",
@@ -23,11 +14,7 @@
     "galleryBg": "gallery.jpg",
     "paymentBg": "payment.jpg"
   },
-
-  "music": {
-    "file": "bgm.mp3"
-  },
-
+  "music": { "file": "bgm.mp3" },
   "tiers": [
     { "id": "men", "name": { "en": "Standard (Men)", "jp": "スタンダード（男性）" }, "priceYen": 9500, "includes": { "en": "Entrance", "jp": "入場" } },
     { "id": "women", "name": { "en": "Women", "jp": "女性" }, "priceYen": 2500, "includes": { "en": "Entrance", "jp": "入場" } },
@@ -35,7 +22,6 @@
     { "id": "vip_plus", "name": { "en": "VIP Plus", "jp": "VIP プラス" }, "priceYen": 20000, "includes": { "en": "VIP + bottle included", "jp": "VIP＋ボトル込み" } },
     { "id": "vip_icon", "name": { "en": "VIP Icon", "jp": "VIP アイコン" }, "priceYen": 40000, "includes": { "en": "Best view + premium service", "jp": "最前＋プレミアム対応" } }
   ],
-
   "payments": {
     "headline": { "en": "How to Pay", "jp": "お支払い方法" },
     "methods": [
@@ -44,12 +30,10 @@
     ],
     "contactLine": "https://line.me/"
   },
-
   "gallery": {
     "headline": { "en": "Past Events", "jp": "過去イベント" },
     "images": ["gallery-1.jpg", "gallery-2.jpg", "gallery-3.jpg"]
   },
-
   "policy": {
     "en": "Cancellation policy: refunds not available within 48 hours of event start.",
     "jp": "キャンセルポリシー：イベント開始48時間以内は返金不可。"
