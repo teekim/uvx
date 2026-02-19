@@ -64,7 +64,7 @@ function track(name, data = {}){
     const key = "uvx_track";
     const arr = JSON.parse(localStorage.getItem(key) || "[]");
     arr.push(payload);
-    localStorage.setItem(key, JSON.stringify(arr.slice(-400)));
+    localStorage.setItem(key, JSON.stringify(arr.slice(-500)));
   }catch{}
 }
 
@@ -134,6 +134,22 @@ function ytEmbed(url){
   return "";
 }
 
+/** --- MASONRY PATTERN (curated) --- **/
+function masonryClass(i){
+  // curated pattern that repeats every 10 images
+  const p = i % 10;
+  if (p === 0) return "w8 h4"; // hero tall
+  if (p === 1) return "w4 h2";
+  if (p === 2) return "w4 h3";
+  if (p === 3) return "w8 h2";
+  if (p === 4) return "w6 h3";
+  if (p === 5) return "w6 h1";
+  if (p === 6) return "w3 h2";
+  if (p === 7) return "w3 h2";
+  if (p === 8) return "w6 h2";
+  return "w6 h3"; // p === 9
+}
+
 function render(cfg){
   document.title = `${t(cfg.title) || "Event"} | ${cfg.brand || "Event"}`;
   $("brand").textContent = cfg.brand || "EVENT";
@@ -162,8 +178,8 @@ function render(cfg){
   const tiersHtml = (cfg.tiers || []).map(x => `
     <div class="box">
       <div class="kicker">${t(x.name)}</div>
-      <h3 style="margin:10px 0 6px;">¥${yen(x.priceYen)}</h3>
-      <div class="small">${t(x.includes)}</div>
+      <div class="price" style="margin-top:10px;">¥${yen(x.priceYen)}</div>
+      <div class="small" style="margin-top:6px;">${t(x.includes)}</div>
     </div>
   `).join("");
 
@@ -179,33 +195,48 @@ function render(cfg){
     <section class="section">
       <div class="section-inner">
         <div class="kicker">${t(cfg.media?.photos?.headline) || "Photos"}</div>
-        <h2>${state.lang==="jp" ? "雰囲気" : "Vibe"}</h2>
-        <div class="gallery">
-          ${photos.map(img => `<img src="${asset(img)}" alt="photo" loading="lazy">`).join("")}
+        <h2>${state.lang==="jp" ? "写真" : "Photos"}</h2>
+
+        <div class="masonry">
+          ${photos.map((img, i) => `
+            <div class="masonry-item ${masonryClass(i)}">
+              <img src="${asset(img)}" alt="photo" loading="lazy">
+            </div>
+          `).join("")}
         </div>
+
+        ${(t(cfg.media?.photos?.note) || t(cfg.media?.photos?.text)) ? `
+          <div class="small" style="margin-top:14px;opacity:.85;">
+            ${t(cfg.media?.photos?.text) || ""} ${t(cfg.media?.photos?.note) || ""}
+          </div>
+        ` : ``}
       </div>
     </section>
   ` : "";
 
   const videos = cfg.media?.videos?.items || [];
-  const videosHtml = videos.length ? `
+  const primaryVideo = cfg.media?.videos?.primary || (videos[0] || null);
+
+  const videosHtml = (primaryVideo && primaryVideo.type === "youtube") ? `
     <section class="section">
       <div class="section-inner">
-        <div class="kicker">${t(cfg.media?.videos?.headline) || "Videos"}</div>
-        <h2>${state.lang==="jp" ? "動画" : "Videos"}</h2>
-        <div class="videos">
-          ${videos.map(v => {
-            if (v.type === "youtube") {
-              const e = ytEmbed(v.url);
-              return e ? `
-                <div class="video">
-                  <iframe src="${e}" title="${t(v.title) || "Video"}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-              ` : "";
-            }
-            return "";
-          }).join("")}
+        <div class="kicker">${t(cfg.media?.videos?.headline) || "Video"}</div>
+        <h2>${state.lang==="jp" ? "ビデオ" : "Video"}</h2>
+
+        <div class="video-big">
+          <iframe
+            src="${ytEmbed(primaryVideo.url)}"
+            title="${t(primaryVideo.title) || "Video"}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
         </div>
+
+        ${(videos.length > 1) ? `
+          <div class="small" style="margin-top:12px;opacity:.85;">
+            ${state.lang==="jp" ? "他の動画も順次追加できます。" : "Add more videos anytime."}
+          </div>
+        ` : ``}
       </div>
     </section>
   ` : "";
@@ -273,9 +304,9 @@ function render(cfg){
             <a class="btn primary" id="buyTickets" href="${ticketUrl}" target="_blank" rel="noreferrer">
               ${state.lang==="jp" ? "【今すぐ前売特典で予約する】" : "GET TICKETS"}
             </a>
-            ${igUrl ? `<a class="btn" id="openIG" href="${igUrl}" target="_blank" rel="noreferrer">Instagram</a>` : ``}
-            ${lineUrl ? `<a class="btn" id="openLine" href="${lineUrl}" target="_blank" rel="noreferrer">LINE</a>` : ``}
-            ${merchUrl ? `<a class="btn" id="buyMerch" href="${merchUrl}" target="_blank" rel="noreferrer">Merch</a>` : ``}
+            ${igUrl ? `<a class="btn ghost" id="openIG" href="${igUrl}" target="_blank" rel="noreferrer">Instagram</a>` : ``}
+            ${lineUrl ? `<a class="btn ghost" id="openLine" href="${lineUrl}" target="_blank" rel="noreferrer">LINE</a>` : ``}
+            ${merchUrl ? `<a class="btn ghost" id="buyMerch" href="${merchUrl}" target="_blank" rel="noreferrer">Merch</a>` : ``}
           </div>
         </div>
       </div>
