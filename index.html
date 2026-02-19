@@ -1,4 +1,3 @@
-<!-- index.html (REPO ROOT) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -8,31 +7,48 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand" id="brand">EVENT</div>
 
-      <div class="controls">
-        <div class="lang">
-          <button id="langEn" class="chip">EN</button>
-          <button id="langJp" class="chip">JP</button>
+  <!-- INVITE BUILDER OVERLAY -->
+  <div id="inviteOverlay" class="overlay">
+    <div class="overlay-inner">
+      <div class="pill-toggle">
+        <button id="langEn" class="pill active">EN</button>
+        <button id="langJp" class="pill">JP</button>
+      </div>
+
+      <div class="overlay-card">
+        <div class="overlay-title" id="overlayTitle">PERSONALIZE INVITATION</div>
+
+        <input id="toName" class="overlay-input" type="text" placeholder="TO: GUEST NAME" />
+        <input id="fromName" class="overlay-input" type="text" placeholder="FROM: YOUR NAME" />
+
+        <select id="tierSelect" class="overlay-input"></select>
+
+        <button id="copyLink" class="overlay-primary">
+          <span class="linkicon">🔗</span>
+          <span id="copyText">COPY LINK TO SEND</span>
+        </button>
+
+        <div class="overlay-row">
+          <button id="musicToggle" class="overlay-chip">
+            ♫ <span id="musicLabel">ADD MUSIC (OPTIONAL)</span>
+          </button>
         </div>
 
-        <input id="guestName" class="input" type="text" placeholder="Distinguished Guest" />
+        <button id="playBtn" class="overlay-play" style="display:none;">PLAY ME!</button>
 
-        <select id="tierSelect" class="input"></select>
+        <div id="toast" class="overlay-toast">Link copied!</div>
 
-        <button id="musicBtn" class="chip" style="display:none;">Play Me!</button>
-
-        <button id="copyLink" class="primary">Copy Link to Send</button>
-        <span id="toast" class="toast">Link copied!</span>
+        <button id="enterBtn" class="overlay-enter">
+          <span id="enterText">ENTER PAGE</span>
+        </button>
       </div>
     </div>
-  </header>
+  </div>
 
+  <!-- PAGE CONTENT -->
   <main id="app"></main>
 
-  <!-- audio src is set by app.js from config -->
   <audio id="bgm" preload="none"></audio>
 
   <script src="./app.js"></script>
