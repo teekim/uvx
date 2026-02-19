@@ -2,51 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Event</title>
   <link rel="stylesheet" href="./styles.css" />
+  <meta name="color-scheme" content="dark" />
 </head>
 <body>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" id="brand">UVX</div>
 
-  <!-- INVITE BUILDER OVERLAY -->
-  <div id="inviteOverlay" class="overlay">
-    <div class="overlay-inner">
-      <div class="pill-toggle">
-        <button id="langEn" class="pill active">EN</button>
-        <button id="langJp" class="pill">JP</button>
-      </div>
-
-      <div class="overlay-card">
-        <div class="overlay-title" id="overlayTitle">PERSONALIZE INVITATION</div>
-
-        <input id="toName" class="overlay-input" type="text" placeholder="TO: GUEST NAME" />
-        <input id="fromName" class="overlay-input" type="text" placeholder="FROM: YOUR NAME" />
-
-        <select id="tierSelect" class="overlay-input"></select>
-
-        <button id="copyLink" class="overlay-primary">
-          <span class="linkicon">🔗</span>
-          <span id="copyText">COPY LINK TO SEND</span>
-        </button>
-
-        <div class="overlay-row">
-          <button id="musicToggle" class="overlay-chip">
-            ♫ <span id="musicLabel">ADD MUSIC (OPTIONAL)</span>
-          </button>
+      <div class="topbar-actions">
+        <div class="segmented" role="tablist" aria-label="Language">
+          <button id="langEn" class="segmented-btn active" aria-selected="true">EN</button>
+          <button id="langJp" class="segmented-btn" aria-selected="false">JP</button>
         </div>
 
-        <button id="playBtn" class="overlay-play" style="display:none;">PLAY ME!</button>
+        <button id="openInvite" class="btn ghost">Invite Builder</button>
+        <button id="ctaTop" class="btn primary">Get Tickets</button>
+      </div>
+    </div>
+  </header>
 
-        <div id="toast" class="overlay-toast">Link copied!</div>
+  <!-- Invite builder (optional but high-conversion) -->
+  <div id="inviteOverlay" class="overlay hidden" aria-hidden="true">
+    <div class="overlay-panel">
+      <div class="overlay-head">
+        <div class="kicker" id="inviteTitle">Personalize Invitation</div>
+        <button id="closeInvite" class="btn ghost">Close</button>
+      </div>
 
-        <button id="enterBtn" class="overlay-enter">
-          <span id="enterText">ENTER PAGE</span>
-        </button>
+      <div class="form">
+        <input id="toName" class="input" type="text" placeholder="To: Guest name" />
+        <input id="fromName" class="input" type="text" placeholder="From: Your name" />
+        <select id="tierSelect" class="input"></select>
+
+        <div class="row">
+          <button id="copyLink" class="btn primary full">Copy Link to Send</button>
+          <button id="enterPage" class="btn ghost full">Enter Page</button>
+        </div>
+
+        <div class="row">
+          <button id="musicToggle" class="btn ghost full" style="display:none;">Add Music (Optional)</button>
+          <button id="playBtn" class="btn neon full" style="display:none;">Play Me</button>
+        </div>
+
+        <div id="toast" class="toast">Copied</div>
       </div>
     </div>
   </div>
 
-  <!-- PAGE CONTENT -->
   <main id="app"></main>
 
   <audio id="bgm" preload="none"></audio>
