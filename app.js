@@ -47,7 +47,6 @@ function withRef(url){
     if (!u.searchParams.get("ref")) u.searchParams.set("ref", ref);
     return u.toString();
   }catch{
-    // if it's not a valid absolute URL (rare), just return as-is
     return url;
   }
 }
@@ -62,7 +61,6 @@ function track(name, data = {}){
     ...data
   };
 
-  // store locally so you can inspect it anytime in DevTools
   try{
     const key = "uvx_track";
     const arr = JSON.parse(localStorage.getItem(key) || "[]");
@@ -72,9 +70,7 @@ function track(name, data = {}){
 }
 
 async function loadConfig(){
-  // lock ref early
   state.ref = getRef();
-
   const path = configPath();
   const res = await fetch(path, { cache: "no-store" });
   if (!res.ok) throw new Error(`Config not found: ${path}`);
@@ -88,12 +84,46 @@ function setLangUI(){
   $("langJp")?.setAttribute("aria-selected", state.lang === "jp");
 }
 
+/** --- INVITE LINK BUILDING --- **/
+function buildInviteLink(){
+  const u = new URL(location.href);
+  u.searchParams.set("event", state.event);
+
+  const ref = getRef();
+  if (ref) u.searchParams.set("ref", ref);
+
+  const to = document.getElementById("invTo")?.value?.trim() || "";
+  const from = document.getElementById("invFrom")?.value?.trim() || "";
+  const tier = document.getElementById("invTier")?.value || "";
+
+  if (to) u.searchParams.set("to", to); else u.searchParams.delete("to");
+  if (from) u.searchParams.set("from", from); else u.searchParams.delete("from");
+  if (tier) u.searchParams.set("tier", tier); else u.searchParams.delete("tier");
+
+  u.searchParams.set("lang", state.lang);
+  return u.toString();
+}
+
+async function copyText(text){
+  await navigator.clipboard.writeText(text);
+}
+
 function render(cfg){
   document.title = `${t(cfg.title) || "Event"} | ${cfg.brand || "Event"}`;
   $("brand").textContent = cfg.brand || "EVENT";
 
   const heroBgFile = cfg.sections?.heroBg || "hero.jpg";
   const heroBg = asset(heroBgFile);
+
+  // Page personalization from URL
+  const toQ = qs.get("to") || "";
+  const fromQ = qs.get("from") || "";
+  const tierQ = qs.get("tier") || "";
+
+  // Default values for widget
+  const tierDefault = tierQ || (cfg.tiers?.[0]?.id || "");
+  const toDefault = toQ;
+  const fromDefault = fromQ;
 
   // Append ref to outgoing links
   const ticketUrl = withRef(cfg.links?.tickets || "#");
@@ -125,6 +155,10 @@ function render(cfg){
     <img src="${asset(img)}" alt="photo" loading="lazy">
   `).join("");
 
+  // Optional: show selected tier name if tier param matches config
+  const tierObj = (cfg.tiers || []).find(x => x.id === tierQ);
+  const tierLabel = tierObj ? `${t(tierObj.name)} — ¥${yen(tierObj.priceYen)}` : "";
+
   $("app").innerHTML = `
     <section class="section hero">
       <div class="bg" style="background-image:url('${heroBg}')"></div>
@@ -134,10 +168,44 @@ function render(cfg){
           <h1>${t(cfg.title)}</h1>
           <div class="small">${t(cfg.description)}</div>
 
+          ${(toQ || fromQ || tierQ) ? `
+          <div class="small" style="margin-top:10px;">
+            ${toQ ? (state.lang==="jp" ? `招待先: ${toQ}` : `Invitation for: ${toQ}`) : ``}
+            ${(toQ && fromQ) ? (state.lang==="jp" ? `（招待: ${fromQ}）` : ` (from ${fromQ})`) : (fromQ ? (state.lang==="jp" ? `招待: ${fromQ}` : `From: ${fromQ}`) : ``)}
+            ${tierLabel ? ` • ${tierLabel}` : ``}
+          </div>
+          ` : ``}
+
           <div class="meta">
             <div class="pill">📅 ${t(cfg.dateText)}</div>
             <div class="pill">📍 ${t(cfg.venueText)}</div>
             ${getRef() ? `<div class="pill">REF: ${getRef()}</div>` : ``}
+          </div>
+
+          <!-- Personalize Invitation -->
+          <div style="margin-top:18px;" class="box">
+            <div class="kicker">${state.lang==="jp" ? "招待をカスタマイズ" : "Personalize Invitation"}</div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+              <input id="invTo" class="input" placeholder="${state.lang==="jp" ? "TO: ゲスト名" : "TO: Guest name"}" value="${toDefault}">
+              <input id="invFrom" class="input" placeholder="${state.lang==="jp" ? "FROM: あなたの名前" : "FROM: Your name"}" value="${fromDefault}">
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:10px;align-items:center;">
+              <select id="invTier" class="select">
+                ${(cfg.tiers||[]).map(x => `
+                  <option value="${x.id}" ${x.id===tierDefault?"selected":""}>
+                    ${t(x.name)} — ¥${yen(x.priceYen)}
+                  </option>
+                `).join("")}
+              </select>
+
+              <button id="copyInvite" class="btn primary" type="button">
+                ${state.lang==="jp" ? "リンクをコピー" : "Copy Link"}
+              </button>
+            </div>
+
+            <div id="copyStatus" class="small" style="margin-top:8px;opacity:.85;"></div>
           </div>
 
           <div class="meta" style="margin-top:16px;">
@@ -188,6 +256,24 @@ function render(cfg){
   document.getElementById("buyMerch")?.addEventListener("click", () => track("click_merch", { href: merchUrl }));
   document.getElementById("openLine")?.addEventListener("click", () => track("click_line", { href: lineUrl }));
   document.getElementById("openIG")?.addEventListener("click", () => track("click_instagram", { href: igUrl }));
+
+  // invite copy + tracking
+  document.getElementById("copyInvite")?.addEventListener("click", async () => {
+    try{
+      const link = buildInviteLink();
+      await copyText(link);
+      document.getElementById("copyStatus").textContent =
+        state.lang==="jp" ? "コピーしました。送ってください。" : "Copied. Send it.";
+      track("copy_invite_link", { link });
+    }catch{
+      document.getElementById("copyStatus").textContent =
+        state.lang==="jp" ? "コピーに失敗しました。" : "Copy failed.";
+    }
+  });
+
+  document.getElementById("invTier")?.addEventListener("change", (e) => {
+    track("select_tier", { tier: e.target.value });
+  });
 }
 
 (async function main(){
