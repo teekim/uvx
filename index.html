@@ -13,48 +13,18 @@
       <div class="brand" id="brand">UVX</div>
 
       <div class="topbar-actions">
-        <div class="segmented" role="tablist" aria-label="Language">
-          <button id="langEn" class="segmented-btn active" aria-selected="true">EN</button>
-          <button id="langJp" class="segmented-btn" aria-selected="false">JP</button>
+        <div class="segmented">
+          <button id="langEn" class="segmented-btn active">EN</button>
+          <button id="langJp" class="segmented-btn">JP</button>
         </div>
 
-        <button id="openInvite" class="btn ghost">Invite Builder</button>
-        <button id="ctaTop" class="btn primary">Buy on Luma</button>
+        <a id="ctaTicketsTop" class="btn primary" href="#" target="_blank" rel="noreferrer">Buy on Luma</a>
       </div>
     </div>
   </header>
 
-  <!-- Invite Builder Overlay -->
-  <div id="inviteOverlay" class="overlay hidden" aria-hidden="true">
-    <div class="overlay-panel">
-      <div class="overlay-head">
-        <div class="kicker" id="inviteTitle">Personalize Invitation</div>
-        <button id="closeInvite" class="btn ghost">Close</button>
-      </div>
-
-      <div class="form">
-        <input id="toName" class="input" type="text" placeholder="To: Guest name" />
-        <input id="fromName" class="input" type="text" placeholder="From: Your name" />
-        <select id="tierSelect" class="input"></select>
-
-        <div class="row">
-          <button id="copyLink" class="btn primary full">Copy Link to Send</button>
-          <button id="enterPage" class="btn ghost full">Enter Page</button>
-        </div>
-
-        <div class="row">
-          <button id="musicToggle" class="btn ghost full" style="display:none;">Add Music (Optional)</button>
-          <button id="playBtn" class="btn neon full" style="display:none;">Play Me</button>
-        </div>
-
-        <div id="toast" class="toast">Copied</div>
-      </div>
-    </div>
-  </div>
-
   <main id="app"></main>
 
-  <audio id="bgm" preload="none"></audio>
   <script src="./app.js"></script>
 </body>
 </html>
