@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Event</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" id="brand">EVENT</div>
+
+    <div class="controls">
+      <div class="lang">
+        <button id="langEn" class="chip">EN</button>
+        <button id="langJp" class="chip">JP</button>
+      </div>
+
+      <div class="field">
+        <label for="guestName" id="labelName">Personalize Invitation</label>
+        <input id="guestName" type="text" placeholder="Distinguished Guest" />
+      </div>
+
+      <div class="field">
+        <label for="tierSelect" id="labelTier">Ticket Type</label>
+        <select id="tierSelect"></select>
+      </div>
+
+      <button id="copyLink" class="primary">Copy Link to Send</button>
+      <span id="toast" class="toast">Link copied!</span>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
