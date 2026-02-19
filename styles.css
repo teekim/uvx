@@ -1,31 +1,125 @@
-/* FULL POSTER SECTION */
+/* styles.css (REPO ROOT) */
+
+:root{
+  --bg:#0b0b10;
+  --fg:#f4f4f7;
+  --muted:#a9a9b3;
+  --line: rgba(255,255,255,.08);
+  --card: rgba(10,10,16,.55);
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Topbar (minimal, REG-like) */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 14px;
+}
+
+.topbar-inner{
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.brand{
+  font-weight:700;
+  letter-spacing:.14em;
+  font-size:12px;
+  color: rgba(244,244,247,.7);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+
+.lang{ display:flex; gap:8px; }
+
+.chip{
+  background: rgba(20,20,32,.55);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.chip.active{ border-color: rgba(244,244,247,.65); }
+
+.input{
+  background: rgba(20,20,32,.55);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  min-width: 220px;
+  outline: none;
+}
+
+.primary{
+  background: var(--fg);
+  color: #0b0b10;
+  border: 0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.toast{
+  opacity:0;
+  transition: opacity .2s;
+  color: rgba(244,244,247,.65);
+  font-size:12px;
+}
+.toast.show{ opacity:1; }
+
+/* Full poster sections */
 .section{
   min-height: 100vh;
   position: relative;
   display: flex;
-  align-items: center;          /* center vertically like REG */
-  justify-content: center;      /* center horizontally */
-  padding: 80px 18px 40px;      /* leave space for sticky header */
+  align-items: center;
+  justify-content: center;
+  padding: 86px 18px 44px; /* space for sticky header */
   border-bottom: 1px solid var(--line);
 }
 
-/* BACKGROUND IMAGE LAYER */
+/* Background layer */
 .bg{
-  position:absolute; inset:0;
+  position:absolute;
+  inset:0;
   background-size:cover;
   background-position:center;
   filter: brightness(.45);
   transform: scale(1.02);
 }
 
-/* DARK GRADIENT OVERLAY (REG-style poster readability) */
+/* Gradient overlay for readability */
 .section::after{
   content:"";
-  position:absolute; inset:0;
+  position:absolute;
+  inset:0;
   background: radial-gradient(60% 60% at 50% 35%, rgba(0,0,0,.35), rgba(0,0,0,.75));
 }
 
-/* CONTENT FRAME */
 .content{
   position: relative;
   z-index: 2;
@@ -35,10 +129,9 @@
   justify-content: center;
 }
 
-/* POSTER CARD (thin border, big rounded) */
 .card{
   width: min(980px, 100%);
-  background: rgba(10,10,16,.55);
+  background: var(--card);
   border: 1px solid rgba(255,255,255,.10);
   border-radius: 26px;
   padding: 26px;
@@ -46,38 +139,7 @@
   backdrop-filter: blur(10px);
 }
 
-/* TYPE HIERARCHY LIKE REG */
-h1{
-  margin: 0 0 10px;
-  font-size: 44px;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-}
-h2{
-  margin: 0 0 10px;
-  font-size: 22px;
-  letter-spacing: 0.02em;
-}
 .small{
   font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-p{ margin: 0 0 10px; color: rgba(244,244,247,.78); }
-
-/* TOPBAR: make it feel lighter like REG (less dominant) */
-.topbar{
-  position: sticky; top: 0; z-index: 10;
-  background: rgba(0,0,0,.35);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  padding: 10px 14px;
-}
-.brand{ margin-bottom: 8px; }
-
-/* Gallery images bigger like a poster grid */
-.gallery img{ height: 220px; }
-
-/* QR images slightly larger */
-.qrs img{ width: 260px; }
+  letter-spacing: .12em;
+  text-tr
