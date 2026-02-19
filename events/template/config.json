@@ -1,15 +1,112 @@
 {
   "brand": "UVX",
   "slug": "template",
-  "title": { "en": "UVX Template Event", "jp": "UVX テンプレイベント" },
-  "subtitle": { "en": "Tokyo • Neon • VIP Experience", "jp": "東京・ネオン・VIP体験" },
-  "description": { "en": "Reusable template page.", "jp": "再利用できるテンプレートページ。" },
-  "dateText": { "en": "Sat MMM DD, YYYY • 18:00–23:00", "jp": "YYYY年MM月DD日(土) 18:00–23:00" },
-  "venueText": { "en": "Tokyo (details after payment)", "jp": "東京（支払い後に詳細案内）" },
-  "sections": { "heroBg": "hero.jpg" },
-  "links": { "tickets": "https://luma.com/uvxwhiteday" },
+  "title": { "en": "UVX — Valentine × Neon / UV Party", "jp": "UVX — Valentine × Neon / UV Party" },
+  "subtitle": { "en": "Roppongi • Neon • VIP Experience", "jp": "六本木・ネオン・VIP体験" },
+
+  "hero": {
+    "tagline": { "en": "Love Glows in the Dark", "jp": "Love Glows in the Dark" },
+    "lead": {
+      "en": "For one night in Roppongi, neon meets festival-grade sound and showtime energy. Dress to glow. Come for the vibe, stay for the moment.",
+      "jp": "六本木で一夜だけ、ネオンと音が交差する “UV Valentine”。フェス級のサウンド、光る演出、ショータイムまで——全部まとめて体験する夜。"
+    },
+    "vipCallout": {
+      "en": "💎 ROYAL VVIP (¥100,000 / ¥300,000)\nDM @uvxjapan for Royal VVIP, VIP tables, or tickets.",
+      "jp": "💎 ロイヤルVVIP（¥100,000 / ¥300,000）\nロイヤルVVIP／VIPテーブル／チケットのご質問はDM：@uvxjapan"
+    }
+  },
+
+  "dateText": { "en": "2026/3/13 (Fri) 21:30–04:30", "jp": "2026/3/13 (金) 21:30–04:30" },
+  "venueText": { "en": "Roppongi (secret — revealed after ticket purchase)", "jp": "六本木（シークレット：購入後に公開）" },
+
+  "sections": {
+    "heroBg": "hero.jpg"
+  },
+
+  "links": {
+    "tickets": "https://luma.com/uvxvalentine",
+    "instagram": "https://instagram.com/uvxjapan",
+    "line": "",
+    "merch": ""
+  },
+
   "tiers": [
     { "id": "men", "name": { "en": "Standard (Men)", "jp": "スタンダード（男性）" }, "priceYen": 9500, "includes": { "en": "Entrance", "jp": "入場" } },
-    { "id": "women", "name": { "en": "Women", "jp": "女性" }, "priceYen": 2500, "includes": { "en": "Entrance", "jp": "入場" } }
-  ]
+    { "id": "women", "name": { "en": "Women", "jp": "女性" }, "priceYen": 2500, "includes": { "en": "Entrance", "jp": "入場" } },
+    { "id": "vip_standard", "name": { "en": "VIP Standard", "jp": "VIP スタンダード" }, "priceYen": 10000, "includes": { "en": "Priority entry", "jp": "優先入場" } },
+    { "id": "vip_plus", "name": { "en": "VIP Plus", "jp": "VIP プラス" }, "priceYen": 20000, "includes": { "en": "VIP + bottle included", "jp": "VIP＋ボトル込み" } },
+    { "id": "vip_icon", "name": { "en": "VIP Icon", "jp": "VIP アイコン" }, "priceYen": 40000, "includes": { "en": "Best view + premium service", "jp": "最前＋プレミアム対応" } }
+  ],
+
+  "content": {
+    "included": {
+      "headline": { "en": "What’s Included", "jp": "内容" },
+      "items": [
+        { "en": "Welcome Shot ×2", "jp": "ウェルカムショット2杯" },
+        { "en": "UV Neon Seal", "jp": "UVネオンシール" },
+        { "en": "Photo Zone", "jp": "フォトゾーン" },
+        { "en": "UVX Performances + UV Art", "jp": "パフォーマンス＋UVアート" }
+      ]
+    },
+    "performers": {
+      "headline": { "en": "Performers", "jp": "パフォーマー" },
+      "items": [
+        { "en": "UVX Dancers – “Kimono Whiteday Special”", "jp": "UVX Dancers – 「Kimono Whiteday Special」" },
+        { "en": "UVX GoGo Dancers (Neon Edition)", "jp": "UVX GoGo Dancers（Neon Edition）" },
+        { "en": "Instagram: @uvxdancers", "jp": "Instagram: @uvxdancers" }
+      ]
+    },
+    "music": {
+      "headline": { "en": "Music", "jp": "音楽" },
+      "text": {
+        "en": "Tomorrowland / EDC vibes — Melodic Techno / EDM / Asia Bounce. Festival-grade sound you rarely hear in clubs.",
+        "jp": "Tomorrowland / EDC vibes — Melodic Techno / EDM / Asia Bounce。世界のフェスで今リアルに鳴ってる曲中心。クラブではなかなか聴けないフェス級サウンド🔥"
+      }
+    },
+    "dress": {
+      "headline": { "en": "Dress Code", "jp": "ドレスコード" },
+      "text": { "en": "Neon / White — UV-reactive recommended", "jp": "ネオン／白（UV反応推奨）" }
+    },
+    "drinks": {
+      "headline": { "en": "Drink & Food", "jp": "ドリンク＆フード" },
+      "text": {
+        "en": "Premium Champagne / Tequila / Vodka + Fruit platters / Ramune / Light bites",
+        "jp": "高級シャンパン・テキーラ・ウォッカ多数＋フルーツ盛り／ラムネ／軽食"
+      }
+    },
+    "vip": {
+      "headline": { "en": "VIP Table", "jp": "VIPテーブル" },
+      "text": {
+        "en": "Prime seating + Bottle service + Priority entry. DM @uvxjapan",
+        "jp": "良席確保＋ボトル＋優先入場。DM：@uvxjapan"
+      }
+    }
+  },
+
+  "vipFlow": {
+    "headline": { "en": "After Payment", "jp": "支払い後の流れ" },
+    "steps": [
+      { "title": { "en": "1) Buy on Luma", "jp": "1) Lumaで購入" }, "text": { "en": "Complete your ticket purchase.", "jp": "チケット購入を完了してください。" } },
+      { "title": { "en": "2) Confirm / DM", "jp": "2) 確認／DM" }, "text": { "en": "If needed, DM @uvxjapan.", "jp": "必要なら @uvxjapan にDMください。" } },
+      { "title": { "en": "3) Venue details", "jp": "3) 会場詳細" }, "text": { "en": "We share the secret venue after confirmation.", "jp": "確認後にシークレット会場を案内します。" } }
+    ]
+  },
+
+  "media": {
+    "photos": {
+      "headline": { "en": "Photos", "jp": "写真" },
+      "images": ["p1.jpg", "p2.jpg", "p3.jpg"]
+    },
+    "videos": {
+      "headline": { "en": "Videos", "jp": "動画" },
+      "items": [
+        { "type": "youtube", "url": "https://www.youtube.com/watch?v=XXXXXXXXXXX", "title": { "en": "Aftermovie", "jp": "アフタームービー" } }
+      ]
+    }
+  },
+
+  "policy": {
+    "en": "Cancellation policy: refunds not available within 48 hours of event start.",
+    "jp": "キャンセルポリシー：イベント開始48時間以内は返金不可。"
+  }
 }
