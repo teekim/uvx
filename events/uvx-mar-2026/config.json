@@ -7,6 +7,7 @@
   "venueText": { "en": "Tokyo (details after payment)", "jp": "東京（支払い後に詳細案内）" },
   "mapUrl": "https://maps.google.com/",
   "dressCode": { "en": "Elegant / Neon accents recommended", "jp": "エレガント（ネオンアクセント推奨）" },
+
   "sections": {
     "heroBg": "hero.jpg",
     "ticketsBg": "tickets.jpg",
@@ -14,7 +15,16 @@
     "galleryBg": "gallery.jpg",
     "paymentBg": "payment.jpg"
   },
+
   "music": { "file": "bgm.mp3" },
+
+  "links": {
+    "tickets": "https://lu.ma/XXXXXX",
+    "merch": "https://YOURSHOP.com/collections/uvx",
+    "line": "https://line.me/ti/p/XXXXXXXX",
+    "instagram": "https://instagram.com/uvxjapan"
+  },
+
   "tiers": [
     { "id": "men", "name": { "en": "Standard (Men)", "jp": "スタンダード（男性）" }, "priceYen": 9500, "includes": { "en": "Entrance", "jp": "入場" } },
     { "id": "women", "name": { "en": "Women", "jp": "女性" }, "priceYen": 2500, "includes": { "en": "Entrance", "jp": "入場" } },
@@ -22,6 +32,25 @@
     { "id": "vip_plus", "name": { "en": "VIP Plus", "jp": "VIP プラス" }, "priceYen": 20000, "includes": { "en": "VIP + bottle included", "jp": "VIP＋ボトル込み" } },
     { "id": "vip_icon", "name": { "en": "VIP Icon", "jp": "VIP アイコン" }, "priceYen": 40000, "includes": { "en": "Best view + premium service", "jp": "最前＋プレミアム対応" } }
   ],
+
+  "vipFlow": {
+    "headline": { "en": "VIP Flow (After Payment)", "jp": "VIP導線（支払い後）" },
+    "steps": [
+      {
+        "title": { "en": "1) Buy ticket on Luma", "jp": "1) Lumaでチケット購入" },
+        "text": { "en": "Complete your ticket purchase on Luma.", "jp": "Lumaでチケット購入を完了してください。" }
+      },
+      {
+        "title": { "en": "2) Send proof on LINE", "jp": "2) LINEで支払いスクショ送付" },
+        "text": { "en": "Send a screenshot of your payment confirmation.", "jp": "支払い完了のスクショを送ってください。" }
+      },
+      {
+        "title": { "en": "3) Receive venue details", "jp": "3) 会場詳細を受け取る" },
+        "text": { "en": "We’ll share venue details after confirmation.", "jp": "確認後に会場詳細を案内します。" }
+      }
+    ]
+  },
+
   "payments": {
     "headline": { "en": "How to Pay", "jp": "お支払い方法" },
     "methods": [
@@ -30,10 +59,26 @@
     ],
     "contactLine": "https://line.me/"
   },
+
+  "media": {
+    "photos": {
+      "headline": { "en": "Photos", "jp": "写真" },
+      "images": ["p1.jpg", "p2.jpg", "p3.jpg"]
+    },
+    "videos": {
+      "headline": { "en": "Videos", "jp": "動画" },
+      "items": [
+        { "title": { "en": "Aftermovie", "jp": "アフタームービー" }, "url": "https://www.youtube.com/watch?v=XXXXXXXX" },
+        { "title": { "en": "Reel", "jp": "リール" }, "url": "https://www.instagram.com/reel/XXXXXXXX" }
+      ]
+    }
+  },
+
   "gallery": {
     "headline": { "en": "Past Events", "jp": "過去イベント" },
     "images": ["gallery-1.jpg", "gallery-2.jpg", "gallery-3.jpg"]
   },
+
   "policy": {
     "en": "Cancellation policy: refunds not available within 48 hours of event start.",
     "jp": "キャンセルポリシー：イベント開始48時間以内は返金不可。"
