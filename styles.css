@@ -10,12 +10,11 @@
   --shadow:0 28px 120px rgba(0,0,0,.60);
 
   --max:1100px;
-  --r-lg:24px;
-  --r-md:16px;
 }
 
 *{box-sizing:border-box}
 html,body{height:100%}
+
 body{
   margin:0;
   color:var(--fg);
@@ -89,6 +88,7 @@ body{
   display:inline-flex;
   align-items:center;
   justify-content:center;
+  user-select:none;
 }
 .btn:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.25)}
 .btn.primary{
@@ -137,18 +137,22 @@ body{
   padding:26px;
   backdrop-filter:blur(12px);
 }
+
 .kicker{
   font-size:12px;
   letter-spacing:.18em;
   text-transform:uppercase;
   color:var(--muted);
 }
+
 h1{
   margin:10px 0 10px;
   font-size:clamp(34px,4.2vw,56px);
   line-height:1.05;
 }
+
 h2{margin:8px 0 16px}
+
 .small{color:var(--muted);font-size:13px;line-height:1.45}
 
 .meta{
@@ -189,7 +193,20 @@ h2{margin:8px 0 16px}
   border-radius:16px;
   border:1px solid rgba(255,255,255,.10);
 }
+
 .footer{
   padding:40px 16px;
   color:rgba(245,246,255,.60);
 }
+
+.input, .select{
+  width:100%;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.22);
+  color:var(--fg);
+  outline:none;
+}
+.input::placeholder{color:rgba(245,246,255,.45)}
+.select{cursor:pointer}
