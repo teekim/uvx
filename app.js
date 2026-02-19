@@ -136,9 +136,8 @@ function ytEmbed(url){
 
 /** --- MASONRY PATTERN (curated) --- **/
 function masonryClass(i){
-  // curated pattern that repeats every 10 images
   const p = i % 10;
-  if (p === 0) return "w8 h4"; // hero tall
+  if (p === 0) return "w8 h4";
   if (p === 1) return "w4 h2";
   if (p === 2) return "w4 h3";
   if (p === 3) return "w8 h2";
@@ -147,7 +146,7 @@ function masonryClass(i){
   if (p === 6) return "w3 h2";
   if (p === 7) return "w3 h2";
   if (p === 8) return "w6 h2";
-  return "w6 h3"; // p === 9
+  return "w6 h3";
 }
 
 function render(cfg){
@@ -175,13 +174,25 @@ function render(cfg){
   cta.textContent = state.lang === "jp" ? "Lumaで購入" : "Buy on Luma";
   cta.onclick = () => track("click_top_cta", { href: ticketUrl });
 
-  const tiersHtml = (cfg.tiers || []).map(x => `
-    <div class="box">
-      <div class="kicker">${t(x.name)}</div>
-      <div class="price" style="margin-top:10px;">¥${yen(x.priceYen)}</div>
-      <div class="small" style="margin-top:6px;">${t(x.includes)}</div>
-    </div>
-  `).join("");
+  // ✅ UPDATED: supports badge + note + soldOut visual (optional)
+  const tiersHtml = (cfg.tiers || []).map(x => {
+    const sold = !!x.soldOut;
+    const badge = x.badge ? t(x.badge) : "";
+    const note = x.note ? t(x.note) : "";
+    const cls = `box${sold ? " is-soldout" : ""}`;
+    return `
+      <div class="${cls}" style="${sold ? "opacity:.55;filter:grayscale(.1);" : ""}">
+        <div class="kicker">
+          ${t(x.name)}
+          ${badge ? ` • <span style="opacity:.85">${badge}</span>` : ``}
+          ${sold ? ` • <span style="opacity:.85">${state.lang==="jp" ? "売り切れ" : "Sold out"}</span>` : ``}
+        </div>
+        <div class="price" style="margin-top:10px;">¥${yen(x.priceYen)}</div>
+        <div class="small" style="margin-top:6px;white-space:pre-line;">${t(x.includes)}</div>
+        ${note ? `<div class="small" style="margin-top:8px;opacity:.75">${note}</div>` : ``}
+      </div>
+    `;
+  }).join("");
 
   const vipStepsHtml = (cfg.vipFlow?.steps || []).map(s => `
     <div class="box">
@@ -274,7 +285,6 @@ function render(cfg){
 
           <div class="hr"></div>
 
-          <!-- Personalize Invitation -->
           <div class="box">
             <div class="kicker">${state.lang==="jp" ? "招待をカスタマイズ" : "Personalize Invitation"}</div>
 
@@ -401,13 +411,11 @@ function render(cfg){
     </footer>
   `;
 
-  // tracking
   document.getElementById("buyTickets")?.addEventListener("click", () => track("click_buy_luma", { href: ticketUrl }));
   document.getElementById("buyMerch")?.addEventListener("click", () => track("click_merch", { href: merchUrl }));
   document.getElementById("openLine")?.addEventListener("click", () => track("click_line", { href: lineUrl }));
   document.getElementById("openIG")?.addEventListener("click", () => track("click_instagram", { href: igUrl }));
 
-  // invite copy
   document.getElementById("copyInvite")?.addEventListener("click", async () => {
     try{
       const link = buildInviteLink();
