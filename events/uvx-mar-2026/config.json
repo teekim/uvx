@@ -1,0 +1,44 @@
+{
+  "brand": "UVX",
+  "slug": "uvx-valentine-2026",
+  "title": { "en": "UVX Valentine Neon Party", "jp": "UVX バレンタイン・ネオンパーティー" },
+  "subtitle": { "en": "Tokyo • Neon • VIP Experience", "jp": "東京・ネオン・VIP体験" },
+
+  "dateText": { "en": "Thu Feb 13, 2026 • 18:00–23:00", "jp": "2026年2月13日(木) 18:00–23:00" },
+  "venueText": { "en": "Roppongi (details after payment)", "jp": "六本木（支払い後に詳細案内）" },
+  "mapUrl": "https://maps.google.com/",
+
+  "dressCode": {
+    "en": "Elegant / Neon accents recommended",
+    "jp": "エレガント（ネオンアクセント推奨）"
+  },
+
+  "heroImage": "hero.jpg",
+
+  "tiers": [
+    { "id": "men", "name": { "en": "Standard (Men)", "jp": "スタンダード（男性）" }, "priceYen": 9500, "includes": { "en": "Entrance", "jp": "入場" } },
+    { "id": "women", "name": { "en": "Women", "jp": "女性" }, "priceYen": 2500, "includes": { "en": "Entrance", "jp": "入場" } },
+    { "id": "vip_standard", "name": { "en": "VIP Standard", "jp": "VIP スタンダード" }, "priceYen": 10000, "includes": { "en": "Priority entry", "jp": "優先入場" } },
+    { "id": "vip_plus", "name": { "en": "VIP Plus", "jp": "VIP プラス" }, "priceYen": 20000, "includes": { "en": "VIP + bottle included", "jp": "VIP＋ボトル込み" } },
+    { "id": "vip_icon", "name": { "en": "VIP Icon", "jp": "VIP アイコン" }, "priceYen": 40000, "includes": { "en": "Best view + premium service", "jp": "最前＋プレミアム対応" } }
+  ],
+
+  "payments": {
+    "headline": { "en": "How to Pay", "jp": "お支払い方法" },
+    "methods": [
+      { "id": "paypay", "name": "PayPay", "qr": "paypay-qr.png", "note": { "en": "Scan to pay", "jp": "QRでお支払い" } },
+      { "id": "bank", "name": { "en": "Bank Transfer", "jp": "銀行振込" }, "qr": "bank-qr.png", "note": { "en": "Send screenshot after transfer", "jp": "振込後スクショ送付" } }
+    ],
+    "contactLine": "https://line.me/"
+  },
+
+  "gallery": {
+    "headline": { "en": "Past Events", "jp": "過去イベント" },
+    "images": ["gallery-1.jpg", "gallery-2.jpg"]
+  },
+
+  "policy": {
+    "en": "Cancellation policy: refunds not available within 48 hours of event start.",
+    "jp": "キャンセルポリシー：イベント開始48時間以内は返金不可。"
+  }
+}
